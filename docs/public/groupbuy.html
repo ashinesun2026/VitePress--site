@@ -470,8 +470,10 @@ async function runFormat(mode) {
       throw new Error('n8n 錯誤 (' + res.status + ')：' + t.slice(0, 120));
     }
 
-    const result = (await res.text()) || '';
+    const data = await res.json();
+    const result = data.result || '';
     document.getElementById('outputText').value = result;
+    document.getElementById('charCount').textContent = result.length + ' 字';
     setStatus('完成', 'ok');
 
   } catch (err) {
