@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>團購文案格式工具</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --border2: #3a3a3a;
+    --text: #f0f0f0;
+    --text2: #999;
+    --text3: #666;
+    --btn-primary-text: #0f0f0f;
+    --btn-secondary: #2a2a2a;
+    --btn-secondary-hover: #333;
+    --btn-danger: #1e1414;
+    --btn-danger-border: #4a2a2a;
+    --btn-danger-text: #e88;
+    --btn-danger-hover: #2a1818;
+    --green: #4caf7d;
+    --green-bg: #0d1f14;
+    --green-border: #1a3a28;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    min-height: 100vh;
+    padding: 16px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .container { max-width: 640px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo span { color: var(--text3); font-weight: 400; margin-left: 6px; font-size: 13px; }
+
+  .conn-badge {
+    font-size: 11px; padding: 3px 9px;
+    border: 1px solid var(--border); border-radius: 20px;
+    color: var(--text3); background: var(--surface2);
+    transition: all 0.2s;
+  }
+  .conn-badge.ok { border-color: var(--green-border); color: var(--green); background: var(--green-bg); }
+
+  .settings-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+
+  .settings-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+    color: var(--text3); text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* webhook-test 警告 */
+  .warn-bar {
+    display: none;
+    background: #1e1800;
+    border: 1px solid #4a3800;
+    border-radius: var(--radius-sm);
+    color: #e8c84a;
+    font-size: 12px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  .warn-bar.show { display: block; }
+
+  .field { margin-bottom: 10px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field-label {
+    font-size: 11px; color: var(--text3);
+    margin-bottom: 5px; display: block;
+  }
+
+  .field-row { display: flex; gap: 7px; align-items: center; }
+
+  .field-row input, .field-row select {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 8px 11px;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+
+  .field-row input[type="password"],
+  .field-row input[type="text"].mono {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+  }
+
+  .field-row input:focus,
+  .field-row select:focus { outline: none; border-color: var(--border2); }
+  .field-row input::placeholder { color: var(--text3); }
+  .field-row select option { background: var(--surface2); }
+
+  .btn-sm {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-size: 12px; font-weight: 500;
+    padding: 8px 13px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-sm:hover { background: var(--btn-secondary-hover); color: var(--text); }
+
+  .saved-msg { font-size: 11px; color: var(--green); margin-top: 6px; display: none; }
+
+  .section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    color: var(--text3); text-transform: uppercase; margin-bottom: 8px;
+  }
+
+  textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.75;
+    padding: 14px 16px;
+    resize: vertical;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  textarea:focus { outline: none; border-color: var(--border2); }
+  textarea::placeholder { color: var(--text3); }
+  #inputText { min-height: 200px; }
+  #outputText { min-height: 280px; background: var(--surface2); }
+
+  .btn-submit {
+    width: 100%;
+    background: #f0f0f0;
+    color: var(--btn-primary-text);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px; font-weight: 600;
+    padding: 13px 16px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    font-family: inherit;
+    letter-spacing: -0.2px;
+  }
+  .btn-submit:hover { background: #d8d8d8; }
+  .btn-submit:active { transform: scale(0.99); }
+  .btn-submit:disabled { opacity: 0.45; pointer-events: none; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .status-bar {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 8px;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border2); display: inline-block; margin-right: 6px;
+    transition: background 0.3s;
+  }
+  .status-dot.ok { background: var(--green); }
+  .status-dot.err { background: #e55; }
+  .status-text { font-size: 12px; color: var(--text3); display: flex; align-items: center; }
+  .char-count { font-size: 12px; color: var(--text3); }
+
+  .btn-copy {
+    width: 100%;
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    color: var(--green);
+    font-size: 14px; font-weight: 500;
+    padding: 11px 16px; margin-top: 10px;
+    cursor: pointer; border-radius: var(--radius-sm);
+    transition: all 0.15s; font-family: inherit;
+  }
+  .btn-copy:hover { background: #0f2a1c; }
+  .btn-copy:active { transform: scale(0.99); }
+  .btn-copy.copied { color: #fff; background: #1a4030; }
+
+  .fix-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+    color: var(--text3); text-transform: uppercase;
+    margin: 20px 0 9px;
+  }
+
+  .btn-group { display: flex; flex-direction: column; gap: 8px; }
+  .btn-row { display: flex; gap: 8px; }
+
+  .btn-fix {
+    flex: 1;
+    background: var(--btn-secondary);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500;
+    padding: 10px 12px;
+    cursor: pointer; transition: all 0.15s; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    line-height: 1.4; text-align: center;
+  }
+  .btn-fix:hover { background: var(--btn-secondary-hover); border-color: #484848; }
+  .btn-fix:active { transform: scale(0.98); }
+  .btn-fix:disabled { opacity: 0.35; pointer-events: none; }
+
+  .btn-recheck {
+    width: 100%;
+    background: var(--btn-danger);
+    border: 1px solid var(--btn-danger-border);
+    color: var(--btn-danger-text);
+    border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500;
+    padding: 10px 16px;
+    cursor: pointer; transition: all 0.15s; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .btn-recheck:hover { background: var(--btn-danger-hover); }
+  .btn-recheck:active { transform: scale(0.98); }
+  .btn-recheck:disabled { opacity: 0.35; pointer-events: none; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin {
+    width: 13px; height: 13px;
+    border: 2px solid rgba(0,0,0,0.15);
+    border-top-color: #333;
+    border-radius: 50%;
+    animation: spin 0.55s linear infinite;
+    display: none; flex-shrink: 0;
+  }
+  .spin.light {
+    border-color: rgba(255,255,255,0.15);
+    border-top-color: currentColor;
+  }
+  .spinning { display: block; }
+
+  @media (max-width: 480px) {
+    body { padding: 12px; }
+    .btn-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">團購文案格式工具 <span>× n8n</span></div>
+    <div class="conn-badge" id="connBadge">未連結</div>
+  </header>
+
+  <!-- 設定 -->
+  <div class="settings-card">
+    <div class="settings-title">連線設定</div>
+
+    <div class="field">
+      <span class="field-label">n8n Webhook URL</span>
+      <div class="field-row">
+        <input type="text" class="mono" id="webhookUrl"
+          placeholder="https://your-n8n.zeabur.app/webhook/groupbuy-format">
+      </div>
+      <!-- webhook-test 警告 -->
+      <div class="warn-bar" id="testWarn">
+        ⚠️ 偵測到 <code>/webhook-test/</code> 路徑——此為 n8n 測試模式，每次只接一個請求。
+        工具已自動改用 <code>/webhook/</code> 正式路徑送出，請確認 n8n workflow 已啟用（Active）。
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">存取 Token（與 n8n 環境變數 GROUPBUY_TOKEN 相同）</span>
+      <div class="field-row">
+        <input type="password" id="accessToken" placeholder="自訂一組密碼">
+        <button class="btn-sm" onclick="toggleToken()">顯示</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">預設 AI 模型</span>
+      <div class="field-row">
+        <select id="modelSelect">
+          <option value="openai">OpenAI — GPT-4o mini（較快）</option>
+          <option value="anthropic">Anthropic — Claude Haiku（較省）</option>
+        </select>
+        <button class="btn-sm" onclick="saveSettings()">儲存</button>
+      </div>
+    </div>
+
+    <div class="saved-msg" id="savedMsg">✓ 設定已儲存</div>
+  </div>
+
+  <!-- 輸入 -->
+  <div class="section-label">原始文案</div>
+  <textarea id="inputText" placeholder="請貼上團購原文..."></textarea>
+
+  <!-- 送出 -->
+  <button class="btn-submit" id="btnSubmit" onclick="runFormat('default')">
+    <span class="spin" id="spinSubmit"></span>
+    送出
+  </button>
+
+  <hr class="divider">
+
+  <!-- 輸出 -->
+  <div class="status-bar">
+    <div class="status-text">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">等待輸入</span>
+    </div>
+    <div class="char-count" id="charCount"></div>
+  </div>
+
+  <textarea id="outputText" placeholder="格式化後的文案將出現在這裡..." readonly></textarea>
+  <button class="btn-copy" id="copyBtn" onclick="copyOutput()">複製文案</button>
+
+  <!-- 修正按鈕 -->
+  <div class="fix-label">重新修正</div>
+  <div class="btn-group">
+    <div class="btn-row">
+      <button class="btn-fix" id="btnNoVariant" onclick="runFormat('no-variant')">
+        <span class="spin light" id="spinNoVariant"></span>
+        無規格 → 修正取貨地區
+      </button>
+      <button class="btn-fix" id="btnVariant" onclick="runFormat('has-variant')">
+        <span class="spin light" id="spinVariant"></span>
+        有規格 → 修正取貨地區
+      </button>
+    </div>
+    <button class="btn-recheck" id="btnRecheck" onclick="runFormat('recheck')">
+      <span class="spin light" id="spinRecheck"></span>
+      ⟳ 其他錯誤 — 重新檢視整篇文章後重新產出
+    </button>
+  </div>
+
+</div>
+<script>
+// ── 指令對照 ────────────────────────────────────────────
+const BODY_RULE = '正文排版規則：每段之間必須空一行分隔；每一段最多三行；保留原文的口語感，不要改寫成書面語。';
+
+const INSTRUCTIONS = {
+  'default':
+    '【指令】請依照所有格式規則，自動判斷商品是否有規格選項，輸出完整格式化文案。\n\n' + BODY_RULE,
+
+  'no-variant':
+    '【指令】這是無規格商品。取貨地區欄位必須完整複製以下這一行，一字不差，不得修改：\n' +
+    'A.枋寮、B.林邊、C.恆春⚠️下單請加選項註明取貨地點\n\n' +
+    '其餘欄位與正文維持不變。\n\n' + BODY_RULE,
+
+  'has-variant':
+    '【指令】這是有規格商品。取貨地區欄位格式：先列出全部商品規格（每項用、分隔），' +
+    '換行後接⚠️下單請用文字註明取貨地點：枋寮、林邊、恆春\n\n' +
+    '其餘欄位與正文維持不變。\n\n' + BODY_RULE,
+
+  'recheck':
+    '【指令】重新檢查。依照所有規則重新檢視下方文案，找出所有格式錯誤後整篇重新輸出修正版。' +
+    '只輸出修正後完整文案，不要任何說明或前言。\n\n' + BODY_RULE
+};
+
+const SPINNER_MAP = {
+  'default':    'spinSubmit',
+  'no-variant': 'spinNoVariant',
+  'has-variant':'spinVariant',
+  'recheck':    'spinRecheck'
+};
+
+const ALL_BTNS = ['btnSubmit', 'btnNoVariant', 'btnVariant', 'btnRecheck'];
+
+// ── webhook-test → webhook 自動轉換 ─────────────────────
+function getProductionUrl(url) {
+  return url.replace('/webhook-test/', '/webhook/');
+}
+
+// ── 主流程 ─────────────────────────────────────────────
+async function runFormat(mode) {
+  const rawUrl = localStorage.getItem('gf_webhook') || '';
+  const token  = localStorage.getItem('gf_token') || '';
+  const model  = localStorage.getItem('gf_model') || 'openai';
+
+  if (!rawUrl) { setStatus('請先設定 Webhook URL', 'idle'); return; }
+  if (!token)  { setStatus('請先設定存取 Token', 'idle'); return; }
+
+  // 自動使用正式路徑，避免 webhook-test 每次只接一次的問題
+  const webhookUrl = getProductionUrl(rawUrl);
+
+  const inputText = document.getElementById('inputText').value.trim();
+  if (!inputText) { setStatus('請先貼上原始文案', 'idle'); return; }
+
+  const fixModes = ['no-variant', 'has-variant', 'recheck'];
+  const outputEl  = document.getElementById('outputText');
+  const outputVal = (outputEl.value || '').trim();
+
+  if (fixModes.includes(mode) && !outputVal) {
+    setStatus('請先執行一次格式修正，再使用重新修正功能', 'idle');
+    return;
+  }
+
+  const sourceText = fixModes.includes(mode) ? outputVal : inputText;
+
+  setLoading(true, mode);
+  setStatus('送出中...', 'idle');
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, model, instruction: INSTRUCTIONS[mode], text: sourceText })
+    });
+
+    if (res.status === 401) throw new Error('Token 驗證失敗，請確認設定');
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error('n8n 錯誤 (' + res.status + ')：' + t.slice(0, 120));
+    }
+
+    const result = (await res.text()) || '';
+    document.getElementById('outputText').value = result;
+    setStatus('完成', 'ok');
+
+  } catch (err) {
+    setStatus('錯誤：' + err.message, 'err');
+  } finally {
+    setLoading(false, mode);
+  }
+}
+
+// ── 狀態 & Loading ──────────────────────────────────────
+function setStatus(msg, state) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  txt.textContent = msg;
+  dot.className = 'status-dot' + (state === 'ok' ? ' ok' : state === 'err' ? ' err' : '');
+  txt.style.color = state === 'ok' ? 'var(--green)' : state === 'err' ? '#e77' : 'var(--text3)';
+}
+
+function setLoading(on, mode) {
+  ALL_BTNS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = on;
+  });
+  const sp = document.getElementById(SPINNER_MAP[mode]);
+  if (sp) sp.classList.toggle('spinning', on);
+}
+
+// ── 複製 ────────────────────────────────────────────────
+function copyOutput() {
+  const text = document.getElementById('outputText').value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ 已複製';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '複製文案'; btn.classList.remove('copied'); }, 2200);
+  });
+}
+
+// ── 設定儲存 ────────────────────────────────────────────
+function saveSettings() {
+  const url   = document.getElementById('webhookUrl').value.trim();
+  const token = document.getElementById('accessToken').value.trim();
+  const model = document.getElementById('modelSelect').value;
+  if (!url || !token) { alert('請填寫 Webhook URL 與 Token'); return; }
+  localStorage.setItem('gf_webhook', url);
+  localStorage.setItem('gf_token',   token);
+  localStorage.setItem('gf_model',   model);
+  updateBadge();
+  checkTestWarn(url);
+  const msg = document.getElementById('savedMsg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2000);
+}
+
+function toggleToken() {
+  const inp = document.getElementById('accessToken');
+  const btn = event.target;
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '隱藏'; }
+  else { inp.type = 'password'; btn.textContent = '顯示'; }
+}
+
+function updateBadge() {
+  const url = localStorage.getItem('gf_webhook');
+  const el  = document.getElementById('connBadge');
+  el.textContent = url ? 'n8n 已連結 ✓' : '未連結';
+  el.className   = 'conn-badge' + (url ? ' ok' : '');
+}
+
+// webhook-test 警告
+function checkTestWarn(url) {
+  const warn = document.getElementById('testWarn');
+  if (url && url.includes('/webhook-test/')) {
+    warn.classList.add('show');
+  } else {
+    warn.classList.remove('show');
+  }
+}
+
+// ── 初始化 ──────────────────────────────────────────────
+(function init() {
+  const url   = localStorage.getItem('gf_webhook') || '';
+  const token = localStorage.getItem('gf_token')   || '';
+  const model = localStorage.getItem('gf_model')   || 'openai';
+  document.getElementById('webhookUrl').value  = url;
+  document.getElementById('accessToken').value = token;
+  document.getElementById('modelSelect').value = model;
+  updateBadge();
+  checkTestWarn(url);
+
+  // 即時偵測輸入框變更
+  document.getElementById('webhookUrl').addEventListener('input', function() {
+    checkTestWarn(this.value);
+  });
+
+  document.getElementById('inputText').addEventListener('input', function() {
+    setStatus(this.value.trim() ? '就緒，點擊送出開始格式化' : '等待輸入', 'idle');
+  });
+})();
+</script>
+</body>
+</html>
