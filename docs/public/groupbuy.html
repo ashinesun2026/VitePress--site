@@ -254,6 +254,20 @@
   .btn-recheck:active { transform: scale(0.98); }
   .btn-recheck:disabled { opacity: 0.35; pointer-events: none; }
 
+  .btn-clear {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    font-size: 13px; font-weight: 500;
+    padding: 9px 16px;
+    margin-top: 7px;
+    cursor: pointer; border-radius: var(--radius-sm);
+    transition: all 0.15s; font-family: inherit;
+  }
+  .btn-clear:hover { background: var(--btn-danger-hover); border-color: var(--btn-danger-border); color: var(--btn-danger-text); }
+  .btn-clear:active { transform: scale(0.99); }
+
   @keyframes spin { to { transform: rotate(360deg); } }
   .spin {
     width: 13px; height: 13px;
@@ -332,6 +346,9 @@
     送出
   </button>
 
+  <!-- 清除原始文案 -->
+  <button class="btn-clear" id="btnClear" onclick="clearInput()">清除原始文案</button>
+
   <hr class="divider">
 
   <!-- 輸出 -->
@@ -368,25 +385,33 @@
 </div>
 <script>
 // ── 指令對照 ────────────────────────────────────────────
-const BODY_RULE = '正文排版規則：每段之間必須空一行分隔；每一段最多三行；保留原文的口語感，不要改寫成書面語。';
+const BODY_RULE = '正文排版：每段之間空一行；每段最多三行；保留口語感。';
+
+const PICKUP_NO_VARIANT = 'A.枋寮、B.林邊、C.恆春⚠️下單請加選項註明取貨地點';
+const PICKUP_HAS_VARIANT = '（規格）\n⚠️下單請用文字註明取貨地點：枋寮、林邊、恆春';
 
 const INSTRUCTIONS = {
   'default':
-    '【指令】請依照所有格式規則，自動判斷商品是否有規格選項，輸出完整格式化文案。\n\n' + BODY_RULE,
+    '【格式化團購文案】\n' +
+    '請輸出標準格式。注意：取貨地點欄位的格式，取決於商品是否有規格選項（例如口味、顏色、尺寸等）。\n\n' +
+    '判斷規則：\n' +
+    '1. 若商品無規格（無口味/顏色/尺寸等選項）→ 取貨地區欄位直接輸出這一行，一字不差：\n' +
+    PICKUP_NO_VARIANT + '\n\n' +
+    '2. 若商品有規格選項 → 取貨地區欄位格式：先列所有規格（以、分隔），換行後接：\n' +
+    '⚠️下單請用文字註明取貨地點：枋寮、林邊、恆春\n\n' +
+    '⚠️重要：商品規格（口味/顏色/尺寸）≠ 取貨地點選項，不可混淆。\n\n' +
+    BODY_RULE,
 
   'no-variant':
-    '【指令】這是無規格商品。取貨地區欄位必須完整複製以下這一行，一字不差，不得修改：\n' +
-    'A.枋寮、B.林邊、C.恆春⚠️下單請加選項註明取貨地點\n\n' +
-    '其餘欄位與正文維持不變。\n\n' + BODY_RULE,
+    '【修正】無規格商品。取貨地區欄位複製這一行，一字不差：\n' +
+    PICKUP_NO_VARIANT + '\n\n其餘不變。' + BODY_RULE,
 
   'has-variant':
-    '【指令】這是有規格商品。取貨地區欄位格式：先列出全部商品規格（每項用、分隔），' +
-    '換行後接⚠️下單請用文字註明取貨地點：枋寮、林邊、恆春\n\n' +
-    '其餘欄位與正文維持不變。\n\n' + BODY_RULE,
+    '【修正】有規格商品。取貨地區欄位：先列全部規格（以、分隔），換行後接：\n' +
+    '⚠️下單請用文字註明取貨地點：枋寮、林邊、恆春\n\n其餘不變。' + BODY_RULE,
 
   'recheck':
-    '【指令】重新檢查。依照所有規則重新檢視下方文案，找出所有格式錯誤後整篇重新輸出修正版。' +
-    '只輸出修正後完整文案，不要任何說明或前言。\n\n' + BODY_RULE
+    '【重新檢查並修正】找出所有格式錯誤，整篇重新輸出。只輸出文案，不加說明。\n\n' + BODY_RULE
 };
 
 const SPINNER_MAP = {
@@ -472,6 +497,14 @@ function setLoading(on, mode) {
   });
   const sp = document.getElementById(SPINNER_MAP[mode]);
   if (sp) sp.classList.toggle('spinning', on);
+}
+
+// ── 清除原始文案 ────────────────────────────────────────
+function clearInput() {
+  const el = document.getElementById('inputText');
+  el.value = '';
+  el.focus();
+  setStatus('等待輸入', 'idle');
 }
 
 // ── 複製 ────────────────────────────────────────────────
