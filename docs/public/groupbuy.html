@@ -54,14 +54,66 @@
   .logo { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
   .logo span { color: var(--text3); font-weight: 400; margin-left: 6px; font-size: 13px; }
 
-  .conn-badge {
-    font-size: 11px; padding: 3px 9px;
-    border: 1px solid var(--border); border-radius: 20px;
-    color: var(--text3); background: var(--surface2);
-    transition: all 0.2s;
+  .user-badge {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--text2);
   }
-  .conn-badge.ok { border-color: var(--green-border); color: var(--green); background: var(--green-bg); }
+  .user-badge .nickname { color: var(--text); font-weight: 500; }
+  .user-badge .btn-settings {
+    background: none; border: 1px solid var(--border2);
+    color: var(--text3); font-size: 11px;
+    padding: 3px 9px; border-radius: 20px;
+    cursor: pointer; font-family: inherit;
+    transition: all 0.15s;
+  }
+  .user-badge .btn-settings:hover { color: var(--text); border-color: var(--border2); }
 
+  /* ── Modal ────────────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 100;
+    align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 24px;
+    width: 100%; max-width: 420px;
+  }
+  .modal-title {
+    font-size: 16px; font-weight: 600; margin-bottom: 6px;
+  }
+  .modal-subtitle {
+    font-size: 13px; color: var(--text3); margin-bottom: 20px; line-height: 1.5;
+  }
+  .modal-field { margin-bottom: 14px; }
+  .modal-field label {
+    display: block; font-size: 11px; color: var(--text3); margin-bottom: 5px;
+  }
+  .modal-field input {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text); font-family: inherit; font-size: 14px;
+    padding: 10px 12px; transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  .modal-field input:focus { outline: none; border-color: var(--border2); }
+  .modal-field input::placeholder { color: var(--text3); }
+  .modal-error {
+    font-size: 12px; color: #e77; margin-top: 10px; display: none;
+  }
+  .btn-modal-submit {
+    width: 100%; background: #f0f0f0; color: var(--btn-primary-text);
+    border: none; border-radius: var(--radius-sm);
+    font-size: 15px; font-weight: 600; padding: 12px 16px;
+    margin-top: 6px; cursor: pointer; font-family: inherit;
+    transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px;
+  }
+  .btn-modal-submit:hover { background: #d8d8d8; }
+  .btn-modal-submit:disabled { opacity: 0.45; pointer-events: none; }
+
+  /* ── Settings card ───────────────────────── */
   .settings-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -76,20 +128,6 @@
     margin-bottom: 10px;
   }
 
-  /* webhook-test 警告 */
-  .warn-bar {
-    display: none;
-    background: #1e1800;
-    border: 1px solid #4a3800;
-    border-radius: var(--radius-sm);
-    color: #e8c84a;
-    font-size: 12px;
-    padding: 8px 12px;
-    margin-top: 8px;
-    line-height: 1.5;
-  }
-  .warn-bar.show { display: block; }
-
   .field { margin-bottom: 10px; }
   .field:last-child { margin-bottom: 0; }
 
@@ -100,7 +138,7 @@
 
   .field-row { display: flex; gap: 7px; align-items: center; }
 
-  .field-row input, .field-row select {
+  .field-row input, .field-row select, .field-row textarea.small {
     flex: 1;
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -112,16 +150,15 @@
     transition: border-color 0.15s;
     -webkit-appearance: none;
   }
-
-  .field-row input[type="password"],
-  .field-row input[type="text"].mono {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 12px;
+  .field-row textarea.small {
+    resize: vertical; min-height: 60px; line-height: 1.5;
   }
 
   .field-row input:focus,
-  .field-row select:focus { outline: none; border-color: var(--border2); }
-  .field-row input::placeholder { color: var(--text3); }
+  .field-row select:focus,
+  .field-row textarea.small:focus { outline: none; border-color: var(--border2); }
+  .field-row input::placeholder,
+  .field-row textarea.small::placeholder { color: var(--text3); }
   .field-row select option { background: var(--surface2); }
 
   .btn-sm {
@@ -293,32 +330,42 @@
 <div class="container">
 
   <header>
-    <div class="logo">團購文案格式工具 <span>× n8n</span></div>
-    <div class="conn-badge" id="connBadge">未連結</div>
+    <div class="logo">團購文案格式工具</div>
+    <div class="user-badge" id="userBadge" style="display:none">
+      <span class="nickname" id="headerNickname"></span>
+      <button class="btn-settings" onclick="openSettings()">設定</button>
+    </div>
   </header>
 
-  <!-- 設定 -->
-  <div class="settings-card">
-    <div class="settings-title">連線設定</div>
-
-    <div class="field">
-      <span class="field-label">n8n Webhook URL</span>
-      <div class="field-row">
-        <input type="text" class="mono" id="webhookUrl"
-          placeholder="https://your-n8n.zeabur.app/webhook/groupbuy-format">
+  <!-- 初次使用 Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+      <div class="modal-title">歡迎使用</div>
+      <div class="modal-subtitle">請輸入你的 Email 和暱稱，以便儲存你的個人設定。<br>下次使用同一 Email 即可自動恢復設定。</div>
+      <div class="modal-field">
+        <label>Email</label>
+        <input type="email" id="modalEmail" placeholder="your@email.com" autocomplete="email">
       </div>
-      <!-- webhook-test 警告 -->
-      <div class="warn-bar" id="testWarn">
-        ⚠️ 偵測到 <code>/webhook-test/</code> 路徑——此為 n8n 測試模式，每次只接一個請求。
-        工具已自動改用 <code>/webhook/</code> 正式路徑送出，請確認 n8n workflow 已啟用（Active）。
+      <div class="modal-field">
+        <label>暱稱</label>
+        <input type="text" id="modalNickname" placeholder="例如：小美" maxlength="20">
       </div>
+      <div class="modal-error" id="modalError"></div>
+      <button class="btn-modal-submit" id="btnModalSubmit" onclick="submitRegistration()">
+        <span class="spin" id="spinModal"></span>
+        開始使用
+      </button>
     </div>
+  </div>
+
+  <!-- 個人設定 -->
+  <div class="settings-card" id="settingsCard" style="display:none">
+    <div class="settings-title">個人設定</div>
 
     <div class="field">
-      <span class="field-label">存取 Token（與 n8n 環境變數 GROUPBUY_TOKEN 相同）</span>
+      <span class="field-label">暱稱</span>
       <div class="field-row">
-        <input type="password" id="accessToken" placeholder="自訂一組密碼">
-        <button class="btn-sm" onclick="toggleToken()">顯示</button>
+        <input type="text" id="settingsNickname" maxlength="20">
       </div>
     </div>
 
@@ -329,10 +376,35 @@
           <option value="openai">OpenAI — GPT-4o mini（較快）</option>
           <option value="anthropic">Anthropic — Claude Haiku（較省）</option>
         </select>
-        <button class="btn-sm" onclick="saveSettings()">儲存</button>
       </div>
     </div>
 
+    <div class="field">
+      <span class="field-label">取貨地點（無規格商品）</span>
+      <div class="field-row">
+        <input type="text" id="pickupNv" placeholder="A.枋寮、B.林邊、C.恆春⚠️下單請加選項註明取貨地點">
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">取貨地點（有規格商品）</span>
+      <div class="field-row">
+        <input type="text" id="pickupHv" placeholder="枋寮、林邊、恆春">
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">補充格式要求（選填，最多 500 字）</span>
+      <div class="field-row">
+        <textarea class="small" id="customInstructions" maxlength="500"
+          placeholder="例如：此商品為預購，請在結尾加上預計出貨日期說明。"></textarea>
+      </div>
+    </div>
+
+    <div class="field-row" style="margin-top:4px">
+      <button class="btn-sm" onclick="saveSettings()">儲存設定</button>
+      <button class="btn-sm" onclick="closeSettings()">取消</button>
+    </div>
     <div class="saved-msg" id="savedMsg">✓ 設定已儲存</div>
   </div>
 
@@ -384,61 +456,35 @@
 
 </div>
 <script>
-// ── 指令對照 ────────────────────────────────────────────
-const BODY_RULE = '正文排版：每段之間空一行；每段最多三行；保留口語感。';
+// ── Supabase 設定 ────────────────────────────────────────
+const SUPABASE_URL  = 'https://gcdfzehcwrqcttgauuqm.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjZGZ6ZWhjd3JxY3R0Z2F1dXFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTEzNzUsImV4cCI6MjA5MTA4NzM3NX0.Os-8vMfS-LpDXguF7p8AXj6rLqPfgzSkK6BLDPc5Daw';
 
-const PICKUP_NO_VARIANT = 'A.枋寮、B.林邊、C.恆春⚠️下單請加選項註明取貨地點';
-const PICKUP_HAS_VARIANT = '（規格）\n⚠️下單請用文字註明取貨地點：枋寮、林邊、恆春';
+function sbFetch(action, body) {
+  return fetch(`${SUPABASE_URL}/functions/v1/groupbuy/${action}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON}`
+    },
+    body: JSON.stringify(body)
+  });
+}
 
-const INSTRUCTIONS = {
-  'default':
-    '【格式化團購文案】\n' +
-    '請輸出標準格式。注意：取貨地點欄位的格式，取決於商品是否有規格選項（例如口味、顏色、尺寸等）。\n\n' +
-    '判斷規則：\n' +
-    '1. 若商品無規格（無口味/顏色/尺寸等選項）→ 取貨地區欄位直接輸出這一行，一字不差：\n' +
-    PICKUP_NO_VARIANT + '\n\n' +
-    '2. 若商品有規格選項 → 取貨地區欄位格式：先列所有規格（以、分隔），換行後接：\n' +
-    '⚠️下單請用文字註明取貨地點：枋寮、林邊、恆春\n\n' +
-    '⚠️重要：商品規格（口味/顏色/尺寸）≠ 取貨地點選項，不可混淆。\n\n' +
-    BODY_RULE,
-
-  'no-variant':
-    '【修正】無規格商品。取貨地區欄位複製這一行，一字不差：\n' +
-    PICKUP_NO_VARIANT + '\n\n其餘不變。' + BODY_RULE,
-
-  'has-variant':
-    '【修正】有規格商品。取貨地區欄位：先列全部規格（以、分隔），換行後接：\n' +
-    '⚠️下單請用文字註明取貨地點：枋寮、林邊、恆春\n\n其餘不變。' + BODY_RULE,
-
-  'recheck':
-    '【重新檢查並修正】找出所有格式錯誤，整篇重新輸出。只輸出文案，不加說明。\n\n' + BODY_RULE
-};
-
+// ── 常數 ────────────────────────────────────────────────
 const SPINNER_MAP = {
   'default':    'spinSubmit',
   'no-variant': 'spinNoVariant',
   'has-variant':'spinVariant',
   'recheck':    'spinRecheck'
 };
-
 const ALL_BTNS = ['btnSubmit', 'btnNoVariant', 'btnVariant', 'btnRecheck'];
-
-// ── webhook-test → webhook 自動轉換 ─────────────────────
-function getProductionUrl(url) {
-  return url.replace('/webhook-test/', '/webhook/');
-}
 
 // ── 主流程 ─────────────────────────────────────────────
 async function runFormat(mode) {
-  const rawUrl = localStorage.getItem('gf_webhook') || '';
-  const token  = localStorage.getItem('gf_token') || '';
-  const model  = localStorage.getItem('gf_model') || 'openai';
-
-  if (!rawUrl) { setStatus('請先設定 Webhook URL', 'idle'); return; }
-  if (!token)  { setStatus('請先設定存取 Token', 'idle'); return; }
-
-  // 自動使用正式路徑，避免 webhook-test 每次只接一次的問題
-  const webhookUrl = getProductionUrl(rawUrl);
+  const userId = localStorage.getItem('gb_user_id');
+  const model  = localStorage.getItem('gb_model') || 'openai';
+  if (!userId) { showModal(); return; }
 
   const inputText = document.getElementById('inputText').value.trim();
   if (!inputText) { setStatus('請先貼上原始文案', 'idle'); return; }
@@ -458,16 +504,13 @@ async function runFormat(mode) {
   setStatus('送出中...', 'idle');
 
   try {
-    const res = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, model, instruction: INSTRUCTIONS[mode], text: sourceText })
-    });
+    const res = await sbFetch('format', { user_id: userId, mode, text: sourceText, model });
 
-    if (res.status === 401) throw new Error('Token 驗證失敗，請確認設定');
+    if (res.status === 401) throw new Error('身份驗證失敗，請重新整理頁面');
+    if (res.status === 429) throw new Error('已達每小時使用上限，請稍後再試');
     if (!res.ok) {
-      const t = await res.text();
-      throw new Error('n8n 錯誤 (' + res.status + ')：' + t.slice(0, 120));
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || '格式化失敗，請稍後再試');
     }
 
     const data = await res.json();
@@ -481,6 +524,108 @@ async function runFormat(mode) {
   } finally {
     setLoading(false, mode);
   }
+}
+
+// ── 初次使用 Modal ──────────────────────────────────────
+function showModal() {
+  document.getElementById('modalOverlay').classList.add('show');
+  document.getElementById('modalEmail').focus();
+}
+
+function hideModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+async function submitRegistration() {
+  const email    = document.getElementById('modalEmail').value.trim();
+  const nickname = document.getElementById('modalNickname').value.trim();
+  const errEl    = document.getElementById('modalError');
+  errEl.style.display = 'none';
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = '請輸入有效的 Email';
+    errEl.style.display = 'block'; return;
+  }
+  if (!nickname) {
+    errEl.textContent = '請輸入暱稱';
+    errEl.style.display = 'block'; return;
+  }
+
+  const btn = document.getElementById('btnModalSubmit');
+  const sp  = document.getElementById('spinModal');
+  btn.disabled = true; sp.classList.add('spinning');
+
+  try {
+    const res  = await sbFetch('identify', { email, nickname });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '連線失敗');
+
+    localStorage.setItem('gb_user_id',  data.user_id);
+    localStorage.setItem('gb_email',    email);
+    localStorage.setItem('gb_nickname', data.nickname);
+    applySettings(data.settings);
+    updateHeader(data.nickname);
+    hideModal();
+  } catch (e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; sp.classList.remove('spinning');
+  }
+}
+
+// ── 個人設定 ────────────────────────────────────────────
+function openSettings() {
+  document.getElementById('settingsCard').style.display = 'block';
+  document.getElementById('settingsNickname').value = localStorage.getItem('gb_nickname') || '';
+  document.getElementById('modelSelect').value      = localStorage.getItem('gb_model') || 'openai';
+  document.getElementById('pickupNv').value         = localStorage.getItem('gb_pickup_nv') || '';
+  document.getElementById('pickupHv').value         = localStorage.getItem('gb_pickup_hv') || '';
+  document.getElementById('customInstructions').value = localStorage.getItem('gb_custom_instr') || '';
+}
+
+function closeSettings() {
+  document.getElementById('settingsCard').style.display = 'none';
+}
+
+async function saveSettings() {
+  const userId   = localStorage.getItem('gb_user_id');
+  if (!userId) return;
+  const nickname = document.getElementById('settingsNickname').value.trim();
+  const model    = document.getElementById('modelSelect').value;
+  const pickupNv = document.getElementById('pickupNv').value.trim();
+  const pickupHv = document.getElementById('pickupHv').value.trim();
+  const customInstructions = document.getElementById('customInstructions').value.trim();
+
+  try {
+    const res = await sbFetch('settings', {
+      user_id: userId, nickname, model,
+      pickup_no_variant: pickupNv,
+      pickup_has_variant: pickupHv,
+      custom_instructions: customInstructions
+    });
+    if (!res.ok) throw new Error();
+    applySettings({ model, pickup_no_variant: pickupNv, pickup_has_variant: pickupHv, custom_instructions: customInstructions });
+    if (nickname) { localStorage.setItem('gb_nickname', nickname); updateHeader(nickname); }
+    const msg = document.getElementById('savedMsg');
+    msg.style.display = 'block';
+    setTimeout(() => { msg.style.display = 'none'; closeSettings(); }, 1500);
+  } catch {
+    alert('儲存失敗，請稍後再試');
+  }
+}
+
+function applySettings(s) {
+  if (!s) return;
+  if (s.model)               localStorage.setItem('gb_model', s.model);
+  if (s.pickup_no_variant  !== undefined) localStorage.setItem('gb_pickup_nv', s.pickup_no_variant);
+  if (s.pickup_has_variant !== undefined) localStorage.setItem('gb_pickup_hv', s.pickup_has_variant);
+  if (s.custom_instructions !== undefined) localStorage.setItem('gb_custom_instr', s.custom_instructions);
+}
+
+function updateHeader(nickname) {
+  document.getElementById('headerNickname').textContent = nickname;
+  document.getElementById('userBadge').style.display = 'flex';
 }
 
 // ── 狀態 & Loading ──────────────────────────────────────
@@ -521,61 +666,29 @@ function copyOutput() {
   });
 }
 
-// ── 設定儲存 ────────────────────────────────────────────
-function saveSettings() {
-  const url   = document.getElementById('webhookUrl').value.trim();
-  const token = document.getElementById('accessToken').value.trim();
-  const model = document.getElementById('modelSelect').value;
-  if (!url || !token) { alert('請填寫 Webhook URL 與 Token'); return; }
-  localStorage.setItem('gf_webhook', url);
-  localStorage.setItem('gf_token',   token);
-  localStorage.setItem('gf_model',   model);
-  updateBadge();
-  checkTestWarn(url);
-  const msg = document.getElementById('savedMsg');
-  msg.style.display = 'block';
-  setTimeout(() => msg.style.display = 'none', 2000);
-}
-
-function toggleToken() {
-  const inp = document.getElementById('accessToken');
-  const btn = event.target;
-  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '隱藏'; }
-  else { inp.type = 'password'; btn.textContent = '顯示'; }
-}
-
-function updateBadge() {
-  const url = localStorage.getItem('gf_webhook');
-  const el  = document.getElementById('connBadge');
-  el.textContent = url ? 'n8n 已連結 ✓' : '未連結';
-  el.className   = 'conn-badge' + (url ? ' ok' : '');
-}
-
-// webhook-test 警告
-function checkTestWarn(url) {
-  const warn = document.getElementById('testWarn');
-  if (url && url.includes('/webhook-test/')) {
-    warn.classList.add('show');
-  } else {
-    warn.classList.remove('show');
-  }
-}
-
 // ── 初始化 ──────────────────────────────────────────────
-(function init() {
-  const url   = localStorage.getItem('gf_webhook') || '';
-  const token = localStorage.getItem('gf_token')   || '';
-  const model = localStorage.getItem('gf_model')   || 'openai';
-  document.getElementById('webhookUrl').value  = url;
-  document.getElementById('accessToken').value = token;
-  document.getElementById('modelSelect').value = model;
-  updateBadge();
-  checkTestWarn(url);
+(async function init() {
+  const userId = localStorage.getItem('gb_user_id');
+  const email  = localStorage.getItem('gb_email');
 
-  // 即時偵測輸入框變更
-  document.getElementById('webhookUrl').addEventListener('input', function() {
-    checkTestWarn(this.value);
-  });
+  if (!userId || !email) {
+    showModal(); return;
+  }
+
+  // 已有 userId：重新拉設定確認帳號仍存在
+  try {
+    const res  = await sbFetch('identify', { email, nickname: '' });
+    const data = await res.json();
+    if (!res.ok || !data.user_id) throw new Error();
+    localStorage.setItem('gb_user_id', data.user_id);
+    applySettings(data.settings);
+    updateHeader(data.nickname || localStorage.getItem('gb_nickname') || '');
+  } catch {
+    // 帳號不存在或網路錯誤 → 顯示 modal 讓使用者重新登記
+    localStorage.removeItem('gb_user_id');
+    showModal();
+    return;
+  }
 
   document.getElementById('inputText').addEventListener('input', function() {
     setStatus(this.value.trim() ? '就緒，點擊送出開始格式化' : '等待輸入', 'idle');
