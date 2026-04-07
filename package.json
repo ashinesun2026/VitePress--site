@@ -1,12 +1,11 @@
 {
-  "name": "vitepress-site",
+  "name": "groupbuy-tool",
   "private": true,
   "scripts": {
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "start": "node server.js"
   },
-  "devDependencies": {
-    "vitepress": "^1.0.0"
+  "dependencies": {
+    "serve-static": "^1.15.0",
+    "finalhandler": "^1.2.0"
   }
 }
