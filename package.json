@@ -1,7 +1,0 @@
-{
-  "name": "groupbuy-tool",
-  "private": true,
-  "scripts": {
-    "start": "node server.js"
-  }
-}
