@@ -3,9 +3,5 @@
   "private": true,
   "scripts": {
     "start": "node server.js"
-  },
-  "dependencies": {
-    "serve-static": "^1.15.0",
-    "finalhandler": "^1.2.0"
   }
 }
