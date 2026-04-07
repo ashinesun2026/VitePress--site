@@ -457,17 +457,17 @@
 </div>
 <script>
 // ── Supabase 設定 ────────────────────────────────────────
-const SUPABASE_URL  = 'https://gcdfzehcwrqcttgauuqm.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjZGZ6ZWhjd3JxY3R0Z2F1dXFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTEzNzUsImV4cCI6MjA5MTA4NzM3NX0.Os-8vMfS-LpDXguF7p8AXj6rLqPfgzSkK6BLDPc5Daw';
+const SUPABASE_URL  = 'https://wshdgztjurzihjpovdqt.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzaGRnenRqdXJ6aWhqcG92ZHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTMxMzgsImV4cCI6MjA5MTA2OTEzOH0.M_n4PBHCpkwnMMbMwk2-SiJ2-zn-OaelFnFuaxvJpbA';
 
 function sbFetch(action, body) {
-  return fetch(`${SUPABASE_URL}/functions/v1/groupbuy/${action}`, {
+  return fetch(`${SUPABASE_URL}/functions/v1/groupbuy`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${SUPABASE_ANON}`
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify({ action, ...body })
   });
 }
 
