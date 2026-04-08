@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>團購文案格式工具</title>
+<title>團購格式師</title>
 <style>
   :root {
     --bg: #0f0f0f;
@@ -68,116 +68,124 @@
   }
   .user-badge .btn-settings:hover { color: var(--text); border-color: var(--border2); }
 
-  /* ── Modal ────────────────────────────────── */
-  .modal-overlay {
+  /* ── 精靈 Overlay ────────────────────────────────── */
+  .wizard-overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.75); z-index: 100;
-    align-items: center; justify-content: center;
-    padding: 16px;
+    background: rgba(0,0,0,0.88); z-index: 100;
+    align-items: flex-start; justify-content: center;
+    padding: 24px 16px;
+    overflow-y: auto;
   }
-  .modal-overlay.show { display: flex; }
-  .modal-box {
+  .wizard-overlay.show { display: flex; }
+
+  .wizard-box {
     background: var(--surface); border: 1px solid var(--border2);
     border-radius: var(--radius); padding: 24px;
-    width: 100%; max-width: 420px;
+    width: 100%; max-width: 460px;
+    margin: auto;
   }
-  .modal-title {
-    font-size: 16px; font-weight: 600; margin-bottom: 6px;
+
+  /* 步驟指示點 */
+  .wizard-dots {
+    display: flex; gap: 7px; justify-content: center;
+    margin-bottom: 22px;
   }
-  .modal-subtitle {
-    font-size: 13px; color: var(--text3); margin-bottom: 20px; line-height: 1.5;
+  .wizard-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--border2); transition: all 0.25s;
   }
-  .modal-field { margin-bottom: 14px; }
-  .modal-field label {
-    display: block; font-size: 11px; color: var(--text3); margin-bottom: 5px;
+  .wizard-dot.done { background: var(--green); }
+  .wizard-dot.active { background: var(--text); transform: scale(1.2); }
+
+  /* 步驟面板 */
+  .wizard-step { display: none; }
+  .wizard-step.active { display: block; }
+
+  .wiz-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+  .wiz-subtitle { font-size: 13px; color: var(--text3); margin-bottom: 20px; line-height: 1.5; }
+
+  /* 通用欄位 */
+  .wiz-field { margin-bottom: 14px; }
+  .wiz-label {
+    display: block; font-size: 11px; color: var(--text3);
+    margin-bottom: 5px; text-transform: uppercase;
+    letter-spacing: 0.06em; font-weight: 600;
   }
-  .modal-field input {
+  .wiz-input, .wiz-select {
     width: 100%; background: var(--surface2);
     border: 1px solid var(--border); border-radius: var(--radius-sm);
     color: var(--text); font-family: inherit; font-size: 14px;
     padding: 10px 12px; transition: border-color 0.15s;
     -webkit-appearance: none;
   }
-  .modal-field input:focus { outline: none; border-color: var(--border2); }
-  .modal-field input::placeholder { color: var(--text3); }
-  .modal-error {
-    font-size: 12px; color: #e77; margin-top: 10px; display: none;
+  .wiz-input:focus, .wiz-select:focus { outline: none; border-color: var(--border2); }
+  .wiz-input::placeholder { color: var(--text3); }
+  .wiz-select option { background: var(--surface2); }
+  .wiz-textarea {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text); font-family: inherit; font-size: 14px;
+    padding: 10px 12px; transition: border-color 0.15s;
+    -webkit-appearance: none; resize: vertical; min-height: 80px; line-height: 1.6;
   }
-  .btn-modal-submit {
-    width: 100%; background: #f0f0f0; color: var(--btn-primary-text);
+  .wiz-textarea:focus { outline: none; border-color: var(--border2); }
+  .wiz-textarea::placeholder { color: var(--text3); }
+
+  /* 取貨點 Radio 卡片 */
+  .pickup-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+  .pickup-option {
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 11px 14px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--surface2);
+  }
+  .pickup-option:hover { border-color: var(--border2); }
+  .pickup-option.selected { border-color: var(--green); background: var(--green-bg); }
+  .pickup-radio-dot {
+    width: 15px; height: 15px; border-radius: 50%;
+    border: 2px solid var(--border2); flex-shrink: 0; margin-top: 3px;
+    transition: all 0.15s;
+  }
+  .pickup-option.selected .pickup-radio-dot { border-color: var(--green); background: var(--green); }
+  .pickup-option-title { font-size: 14px; font-weight: 500; }
+  .pickup-option-desc { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  /* 取貨點輸入區 */
+  .pickup-inputs {
+    margin-top: 10px; display: none;
+    flex-direction: column; gap: 8px;
+  }
+  .pickup-inputs.show { display: flex; }
+  .pickup-input-hint { font-size: 11px; color: var(--text3); margin-bottom: 3px; }
+
+  /* 導航按鈕 */
+  .wizard-nav { display: flex; gap: 8px; margin-top: 20px; align-items: center; }
+  .btn-wiz-prev {
+    background: transparent; border: 1px solid var(--border2);
+    color: var(--text2); font-size: 14px; padding: 11px 18px;
+    border-radius: var(--radius-sm); cursor: pointer;
+    font-family: inherit; transition: all 0.15s; flex-shrink: 0;
+  }
+  .btn-wiz-prev:hover { color: var(--text); }
+  .btn-wiz-next {
+    flex: 1; background: #f0f0f0; color: #0f0f0f;
     border: none; border-radius: var(--radius-sm);
     font-size: 15px; font-weight: 600; padding: 12px 16px;
-    margin-top: 6px; cursor: pointer; font-family: inherit;
-    transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px;
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
   }
-  .btn-modal-submit:hover { background: #d8d8d8; }
-  .btn-modal-submit:disabled { opacity: 0.45; pointer-events: none; }
-
-  /* ── Settings card ───────────────────────── */
-  .settings-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin-bottom: 16px;
+  .btn-wiz-next:hover { background: #d8d8d8; }
+  .btn-wiz-next:disabled { opacity: 0.45; pointer-events: none; }
+  .btn-wiz-skip {
+    background: none; border: none; color: var(--text3);
+    font-size: 13px; cursor: pointer; font-family: inherit;
+    padding: 0; text-align: center; display: block;
+    margin-top: 10px; width: 100%;
   }
+  .btn-wiz-skip:hover { color: var(--text2); }
+  .wiz-error { font-size: 12px; color: #e77; margin-top: 10px; display: none; }
 
-  .settings-title {
-    font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
-    color: var(--text3); text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-
-  .field { margin-bottom: 10px; }
-  .field:last-child { margin-bottom: 0; }
-
-  .field-label {
-    font-size: 11px; color: var(--text3);
-    margin-bottom: 5px; display: block;
-  }
-
-  .field-row { display: flex; gap: 7px; align-items: center; }
-
-  .field-row input, .field-row select, .field-row textarea.small {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 13px;
-    padding: 8px 11px;
-    transition: border-color 0.15s;
-    -webkit-appearance: none;
-  }
-  .field-row textarea.small {
-    resize: vertical; min-height: 60px; line-height: 1.5;
-  }
-
-  .field-row input:focus,
-  .field-row select:focus,
-  .field-row textarea.small:focus { outline: none; border-color: var(--border2); }
-  .field-row input::placeholder,
-  .field-row textarea.small::placeholder { color: var(--text3); }
-  .field-row select option { background: var(--surface2); }
-
-  .btn-sm {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text2);
-    font-size: 12px; font-weight: 500;
-    padding: 8px 13px;
-    border-radius: var(--radius-sm);
-    white-space: nowrap;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-  .btn-sm:hover { background: var(--btn-secondary-hover); color: var(--text); }
-
-  .saved-msg { font-size: 11px; color: var(--green); margin-top: 6px; display: none; }
-
+  /* ── 主頁面 ────────────────────────────────────── */
   .section-label {
     font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
     color: var(--text3); text-transform: uppercase; margin-bottom: 8px;
@@ -324,106 +332,272 @@
     body { padding: 12px; }
     .btn-row { flex-direction: column; }
   }
+
+  /* ── Mini Modal（重新修正描述）─────────────────────────── */
+  .mini-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.78); z-index: 200;
+    align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .mini-overlay.show { display: flex; }
+  .mini-box {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 20px;
+    width: 100%; max-width: 400px;
+  }
+  .mini-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .mini-subtitle { font-size: 12px; color: var(--text3); margin-bottom: 14px; line-height: 1.5; }
+
+  /* ── 結束 Overlay ─────────────────────────────────────── */
+  .end-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92); z-index: 200;
+    align-items: flex-start; justify-content: center;
+    padding: 24px 16px; overflow-y: auto;
+  }
+  .end-overlay.show { display: flex; }
+  .end-box {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 24px;
+    width: 100%; max-width: 460px; margin: auto;
+  }
+  .end-title { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+  .end-subtitle { font-size: 13px; color: var(--text3); margin-bottom: 20px; }
+
+  .stat-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .stat-card {
+    flex: 1; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 12px 8px; text-align: center;
+  }
+  .stat-num { font-size: 22px; font-weight: 700; color: var(--green); line-height: 1; }
+  .stat-label { font-size: 10px; color: var(--text3); margin-top: 4px; line-height: 1.4; }
+
+  .daily-quote {
+    background: var(--surface2); border-left: 3px solid var(--green);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 10px 14px; margin-bottom: 18px;
+    font-size: 13px; color: var(--text2); line-height: 1.6;
+  }
+
+  .star-rating { display: flex; gap: 4px; justify-content: center; margin-bottom: 10px; }
+  .star-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 30px; padding: 2px; line-height: 1;
+    transition: transform 0.1s; color: var(--border2);
+  }
+  .star-btn.active { color: #f5c518; }
+  .star-btn:hover { transform: scale(1.2); color: #f5c518; }
+  .star-required {
+    font-size: 11px; color: #e77; text-align: center;
+    margin-bottom: 10px; display: none;
+  }
+
+  .btn-end {
+    width: 100%; background: transparent;
+    border: 1px solid var(--border2); color: var(--text3);
+    font-size: 13px; font-weight: 500; padding: 9px 16px;
+    margin-top: 7px; cursor: pointer; border-radius: var(--radius-sm);
+    transition: all 0.15s; font-family: inherit;
+  }
+  .btn-end:hover { background: var(--surface2); color: var(--text2); }
+  .btn-end:active { transform: scale(0.99); }
+
+  .btn-end-submit {
+    width: 100%; background: #f0f0f0; color: #0f0f0f;
+    border: none; border-radius: var(--radius-sm);
+    font-size: 15px; font-weight: 600; padding: 13px 16px;
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    margin-top: 16px;
+  }
+  .btn-end-submit:hover { background: #d8d8d8; }
+  .btn-end-submit:disabled { opacity: 0.45; pointer-events: none; }
+
+  .btn-end-skip {
+    background: none; border: none; color: var(--text3);
+    font-size: 12px; cursor: pointer; font-family: inherit;
+    padding: 0; text-align: center; display: block;
+    margin-top: 10px; width: 100%;
+  }
+  .btn-end-skip:hover { color: var(--text2); }
+
+  .end-hint {
+    font-size: 12px; color: var(--text3); text-align: center;
+    margin-top: 20px; margin-bottom: 6px;
+  }
 </style>
 </head>
 <body>
 <div class="container">
 
   <header>
-    <div class="logo">團購文案格式工具</div>
+    <div class="logo">團購格式師 <span>— 由「團購文案引擎」驅動的自動化排版系統 —</span></div>
     <div class="user-badge" id="userBadge" style="display:none">
       <span class="nickname" id="headerNickname"></span>
-      <button class="btn-settings" onclick="openSettings()">設定</button>
+      <button class="btn-settings" onclick="openWizard(false)">設定</button>
     </div>
   </header>
 
-  <!-- 初次使用 Modal -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-box">
-      <div class="modal-title">歡迎使用</div>
-      <div class="modal-subtitle">請輸入你的 Email 和暱稱，以便儲存你的個人設定。<br>下次使用同一 Email 即可自動恢復設定。</div>
-      <div class="modal-field">
-        <label>Email</label>
-        <input type="email" id="modalEmail" placeholder="your@email.com" autocomplete="email">
+  <!-- ── 設定精靈 Overlay ──────────────────────────────── -->
+  <div class="wizard-overlay" id="wizardOverlay">
+    <div class="wizard-box">
+
+      <!-- 步驟指示點 -->
+      <div class="wizard-dots" id="wizDots"></div>
+
+      <!-- 步驟 0：帳號建立（新用戶） -->
+      <div class="wizard-step" id="wizStep0">
+        <div class="wiz-title">歡迎使用</div>
+        <div class="wiz-subtitle">輸入 Email 和暱稱，下次登入時自動恢復所有設定。</div>
+        <div class="wiz-field">
+          <label class="wiz-label">Email</label>
+          <input class="wiz-input" type="email" id="wizEmail" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="wiz-field">
+          <label class="wiz-label">暱稱</label>
+          <input class="wiz-input" type="text" id="wizNickname" placeholder="例如：小美" maxlength="20">
+        </div>
+        <div class="wiz-error" id="wizError0"></div>
+        <div class="wizard-nav">
+          <button class="btn-wiz-next" id="wizNext0" onclick="wizardNext(0)">
+            <span class="spin" id="spinWiz0"></span>
+            下一步
+          </button>
+        </div>
       </div>
-      <div class="modal-field">
-        <label>暱稱</label>
-        <input type="text" id="modalNickname" placeholder="例如：小美" maxlength="20">
+
+      <!-- 步驟 1：取貨點設定 -->
+      <div class="wizard-step" id="wizStep1">
+        <div class="wiz-title">取貨點設定</div>
+        <div class="wiz-subtitle">格式化時，AI 會自動帶入正確的取貨資訊。</div>
+
+        <!-- AI 模型（回訪用戶才顯示暱稱修改） -->
+        <div class="wiz-field" id="wizFieldNickname" style="display:none">
+          <label class="wiz-label">暱稱</label>
+          <input class="wiz-input" type="text" id="wizNicknameEdit" maxlength="20">
+        </div>
+        <div class="wiz-field">
+          <label class="wiz-label">AI 模型</label>
+          <select class="wiz-select" id="wizModel">
+            <option value="openai">OpenAI — GPT-4o mini（較快）</option>
+            <option value="anthropic">Anthropic — Claude Haiku（較省）</option>
+          </select>
+        </div>
+
+        <div class="wiz-field">
+          <label class="wiz-label">取貨點類型</label>
+          <div class="pickup-options">
+
+            <!-- 單一取貨點 -->
+            <div class="pickup-option" id="pickupOptSingle" onclick="selectPickupMode('single')">
+              <div class="pickup-radio-dot"></div>
+              <div>
+                <div class="pickup-option-title">單一取貨點</div>
+                <div class="pickup-option-desc">只有一個地點，文案簡化不加下單備注</div>
+                <div class="pickup-inputs" id="pickupInputsSingle">
+                  <div class="pickup-input-hint">取貨點名稱</div>
+                  <input class="wiz-input" type="text" id="wizPickupSingle" placeholder="例如：恆春">
+                </div>
+              </div>
+            </div>
+
+            <!-- 兩個以上 -->
+            <div class="pickup-option" id="pickupOptMultiple" onclick="selectPickupMode('multiple')">
+              <div class="pickup-radio-dot"></div>
+              <div style="flex:1">
+                <div class="pickup-option-title">兩個以上取貨點</div>
+                <div class="pickup-option-desc">分別設定無規格 / 有規格商品的取貨行</div>
+                <div class="pickup-inputs" id="pickupInputsMultiple">
+                  <div>
+                    <div class="pickup-input-hint">無規格商品取貨行（完整字串，原樣輸出）</div>
+                    <input class="wiz-input" type="text" id="wizPickupNv"
+                      placeholder="A.枋寮、B.林邊、C.恆春⚠️下單請加選項註明取貨地點">
+                  </div>
+                  <div>
+                    <div class="pickup-input-hint">有規格商品取貨地名（列完規格後附加）</div>
+                    <input class="wiz-input" type="text" id="wizPickupHv"
+                      placeholder="枋寮、林邊、恆春">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 自定義字串 -->
+            <div class="pickup-option" id="pickupOptCustom" onclick="selectPickupMode('custom')">
+              <div class="pickup-radio-dot"></div>
+              <div style="flex:1">
+                <div class="pickup-option-title">自定義字串</div>
+                <div class="pickup-option-desc">不管有無規格，統一附加此字串</div>
+                <div class="pickup-inputs" id="pickupInputsCustom">
+                  <div class="pickup-input-hint">自定義取貨字串</div>
+                  <input class="wiz-input" type="text" id="wizPickupCustom"
+                    placeholder="輸入要附加的取貨說明">
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="wiz-error" id="wizError1"></div>
+        <div class="wizard-nav">
+          <button class="btn-wiz-prev" id="wizPrev1" onclick="wizardPrev(1)">上一步</button>
+          <button class="btn-wiz-next" onclick="wizardNext(1)">下一步</button>
+        </div>
       </div>
-      <div class="modal-error" id="modalError"></div>
-      <button class="btn-modal-submit" id="btnModalSubmit" onclick="submitRegistration()">
-        <span class="spin" id="spinModal"></span>
-        開始使用
-      </button>
+
+      <!-- 步驟 2：固定備注 -->
+      <div class="wizard-step" id="wizStep2">
+        <div class="wiz-title">商品介紹底部固定備注 <span style="font-size:12px;color:var(--text3);font-weight:400">（選填）</span></div>
+        <div class="wiz-subtitle">每篇文案的商品介紹最末都會自動附加這段文字。</div>
+        <div class="wiz-field">
+          <textarea class="wiz-textarea" id="wizBottomNote" rows="3"
+            placeholder="例如：預購商品，預計出貨日 XX 月 XX 日。"></textarea>
+        </div>
+        <div class="wizard-nav">
+          <button class="btn-wiz-prev" onclick="wizardPrev(2)">上一步</button>
+          <button class="btn-wiz-next" onclick="wizardNext(2)">下一步</button>
+        </div>
+        <button class="btn-wiz-skip" onclick="wizardSkip(2)">略過此步驟</button>
+      </div>
+
+      <!-- 步驟 3：其他需求 -->
+      <div class="wizard-step" id="wizStep3">
+        <div class="wiz-title">其他格式需求 <span style="font-size:12px;color:var(--text3);font-weight:400">（選填）</span></div>
+        <div class="wiz-subtitle">有特殊排版要求可在此補充，最多 500 字。</div>
+        <div class="wiz-field">
+          <textarea class="wiz-textarea" id="wizCustomInstr" maxlength="500" rows="4"
+            placeholder="例如：結尾加上「數量有限，售完為止」。"></textarea>
+        </div>
+        <div class="wiz-error" id="wizError3"></div>
+        <div class="wizard-nav">
+          <button class="btn-wiz-prev" onclick="wizardPrev(3)">上一步</button>
+          <button class="btn-wiz-next" id="wizBtnFinish" onclick="wizardFinish()">
+            <span class="spin" id="spinWizFinish"></span>
+            完成設定
+          </button>
+        </div>
+        <button class="btn-wiz-skip" onclick="wizardFinish()">略過，直接完成</button>
+      </div>
+
     </div>
   </div>
 
-  <!-- 個人設定 -->
-  <div class="settings-card" id="settingsCard" style="display:none">
-    <div class="settings-title">個人設定</div>
-
-    <div class="field">
-      <span class="field-label">暱稱</span>
-      <div class="field-row">
-        <input type="text" id="settingsNickname" maxlength="20">
-      </div>
-    </div>
-
-    <div class="field">
-      <span class="field-label">預設 AI 模型</span>
-      <div class="field-row">
-        <select id="modelSelect">
-          <option value="openai">OpenAI — GPT-4o mini（較快）</option>
-          <option value="anthropic">Anthropic — Claude Haiku（較省）</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="field">
-      <span class="field-label">取貨地點（無規格商品）</span>
-      <div class="field-row">
-        <input type="text" id="pickupNv" placeholder="A.枋寮、B.林邊、C.恆春⚠️下單請加選項註明取貨地點">
-      </div>
-    </div>
-
-    <div class="field">
-      <span class="field-label">取貨地點（有規格商品）</span>
-      <div class="field-row">
-        <input type="text" id="pickupHv" placeholder="枋寮、林邊、恆春">
-      </div>
-    </div>
-
-    <div class="field">
-      <span class="field-label">補充格式要求（選填，最多 500 字）</span>
-      <div class="field-row">
-        <textarea class="small" id="customInstructions" maxlength="500"
-          placeholder="例如：此商品為預購，請在結尾加上預計出貨日期說明。"></textarea>
-      </div>
-    </div>
-
-    <div class="field-row" style="margin-top:4px">
-      <button class="btn-sm" onclick="saveSettings()">儲存設定</button>
-      <button class="btn-sm" onclick="closeSettings()">取消</button>
-    </div>
-    <div class="saved-msg" id="savedMsg">✓ 設定已儲存</div>
-  </div>
-
-  <!-- 輸入 -->
+  <!-- ── 主頁面 ────────────────────────────────────── -->
   <div class="section-label">原始文案</div>
   <textarea id="inputText" placeholder="請貼上團購原文..."></textarea>
 
-  <!-- 送出 -->
   <button class="btn-submit" id="btnSubmit" onclick="runFormat('default')">
     <span class="spin" id="spinSubmit"></span>
     送出
   </button>
 
-  <!-- 清除原始文案 -->
   <button class="btn-clear" id="btnClear" onclick="clearInput()">清除原始文案</button>
 
   <hr class="divider">
 
-  <!-- 輸出 -->
   <div class="status-bar">
     <div class="status-text">
       <span class="status-dot" id="statusDot"></span>
@@ -435,7 +609,6 @@
   <textarea id="outputText" placeholder="格式化後的文案將出現在這裡..." readonly></textarea>
   <button class="btn-copy" id="copyBtn" onclick="copyOutput()">複製文案</button>
 
-  <!-- 修正按鈕 -->
   <div class="fix-label">重新修正</div>
   <div class="btn-group">
     <div class="btn-row">
@@ -448,15 +621,86 @@
         有規格 → 修正取貨地區
       </button>
     </div>
-    <button class="btn-recheck" id="btnRecheck" onclick="runFormat('recheck')">
+    <button class="btn-recheck" id="btnRecheck" onclick="openMiniOverlay()">
       <span class="spin light" id="spinRecheck"></span>
       ⟳ 其他錯誤 — 重新檢視整篇文章後重新產出
     </button>
   </div>
 
+  <p class="end-hint">完成今日所有文案了嗎？按下結束，留下今天的使用紀錄。</p>
+  <button class="btn-end" id="btnEnd" onclick="openEndOverlay()">結束</button>
+
 </div>
+
+<!-- ── Mini Modal（重新修正描述）────────────────────────── -->
+<div class="mini-overlay" id="miniOverlay">
+  <div class="mini-box">
+    <div class="mini-title">描述問題</div>
+    <div class="mini-subtitle">告訴 AI 哪裡需要修正，讓重新產出更精準。（選填）</div>
+    <textarea class="wiz-textarea" id="recheckDesc" rows="3" maxlength="300"
+      placeholder="例如：取貨地區格式不對，有規格商品應加上各地名稱..."></textarea>
+    <div class="wiz-error" id="recheckError"></div>
+    <div class="wizard-nav" style="margin-top:12px">
+      <button class="btn-wiz-prev" onclick="closeMiniOverlay()">取消</button>
+      <button class="btn-wiz-next" id="btnSubmitRecheck" onclick="submitRecheck()">
+        <span class="spin" id="spinMiniRecheck"></span>
+        重新產出
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 結束 Overlay ──────────────────────────────────────── -->
+<div class="end-overlay" id="endOverlay">
+  <div class="end-box">
+    <div class="end-title">今天辛苦了</div>
+    <div class="end-subtitle">幾個數字，紀念你省下的時間。</div>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num" id="statCount24h">—</div>
+        <div class="stat-label">24 小時<br>使用次數</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statSaved24h">—</div>
+        <div class="stat-label">今日節省<br>（分鐘）</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statSavedWeek">—</div>
+        <div class="stat-label">本週節省<br>（分鐘）</div>
+      </div>
+    </div>
+
+    <div class="daily-quote" id="dailyQuote"></div>
+
+    <div class="wiz-label" style="text-align:center;margin-bottom:10px">今天滿意嗎？（必填）</div>
+    <div class="star-rating" id="starRating">
+      <button class="star-btn" onclick="setRating(1)">★</button>
+      <button class="star-btn" onclick="setRating(2)">★</button>
+      <button class="star-btn" onclick="setRating(3)">★</button>
+      <button class="star-btn" onclick="setRating(4)">★</button>
+      <button class="star-btn" onclick="setRating(5)">★</button>
+    </div>
+    <div class="star-required" id="starRequired">請選擇星數後再送出</div>
+
+    <div class="wiz-field">
+      <label class="wiz-label">有什麼建議？（選填）</label>
+      <textarea class="wiz-textarea" id="ratingNote" rows="3" maxlength="500"
+        placeholder="任何想說的，我們都很想聽..."></textarea>
+    </div>
+
+    <div class="wiz-error" id="endError"></div>
+
+    <button class="btn-end-submit" id="btnEndSubmit" onclick="submitRating()">
+      <span class="spin" id="spinEndSubmit"></span>
+      送出並結束
+    </button>
+    <button class="btn-end-skip" onclick="closeEndOverlay()">取消，返回，繼續使用</button>
+  </div>
+</div>
+
 <script>
-// ── Supabase 設定 ────────────────────────────────────────
+// ── Supabase ─────────────────────────────────────────────
 const SUPABASE_URL  = 'https://wshdgztjurzihjpovdqt.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzaGRnenRqdXJ6aWhqcG92ZHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTMxMzgsImV4cCI6MjA5MTA2OTEzOH0.M_n4PBHCpkwnMMbMwk2-SiJ2-zn-OaelFnFuaxvJpbA';
 
@@ -471,7 +715,7 @@ function sbFetch(action, body) {
   });
 }
 
-// ── 常數 ────────────────────────────────────────────────
+// ── 常數 ─────────────────────────────────────────────────
 const SPINNER_MAP = {
   'default':    'spinSubmit',
   'no-variant': 'spinNoVariant',
@@ -480,11 +724,220 @@ const SPINNER_MAP = {
 };
 const ALL_BTNS = ['btnSubmit', 'btnNoVariant', 'btnVariant', 'btnRecheck'];
 
-// ── 主流程 ─────────────────────────────────────────────
-async function runFormat(mode) {
+// ── 精靈狀態 ──────────────────────────────────────────────
+let _wizIsNew    = false;  // 新用戶 → 顯示 step0
+let _wizStep     = 1;
+let _pickupMode  = 'multiple';
+
+function openWizard(isNew) {
+  _wizIsNew = isNew;
+  _wizStep  = isNew ? 0 : 1;
+
+  // 回訪用戶：預填現有設定
+  if (!isNew) {
+    document.getElementById('wizFieldNickname').style.display = 'block';
+    document.getElementById('wizNicknameEdit').value = localStorage.getItem('gb_nickname') || '';
+    document.getElementById('wizModel').value        = localStorage.getItem('gb_model') || 'openai';
+    _pickupMode = localStorage.getItem('gb_pickup_mode') || 'multiple';
+    document.getElementById('wizPickupSingle').value  = localStorage.getItem('gb_pickup_single') || '';
+    document.getElementById('wizPickupNv').value      = localStorage.getItem('gb_pickup_nv') || '';
+    document.getElementById('wizPickupHv').value      = localStorage.getItem('gb_pickup_hv') || '';
+    document.getElementById('wizPickupCustom').value  = localStorage.getItem('gb_pickup_custom') || '';
+    document.getElementById('wizBottomNote').value    = localStorage.getItem('gb_bottom_note') || '';
+    document.getElementById('wizCustomInstr').value   = localStorage.getItem('gb_custom_instr') || '';
+    selectPickupMode(_pickupMode);
+  } else {
+    document.getElementById('wizFieldNickname').style.display = 'none';
+    selectPickupMode('multiple');
+  }
+
+  renderWizard();
+  document.getElementById('wizardOverlay').classList.add('show');
+}
+
+function closeWizard() {
+  document.getElementById('wizardOverlay').classList.remove('show');
+}
+
+function renderWizard() {
+  // 決定顯示幾個點（新用戶 4 步，回訪 3 步）
+  const firstStep = _wizIsNew ? 0 : 1;
+  const steps = [firstStep, 1, 2, 3].filter((v, i, a) => a.indexOf(v) === i && v >= firstStep);
+  const totalSteps = _wizIsNew ? 4 : 3;
+
+  // 更新步驟指示點
+  const dotsEl = document.getElementById('wizDots');
+  dotsEl.innerHTML = '';
+  const dotSteps = _wizIsNew ? [0, 1, 2, 3] : [1, 2, 3];
+  dotSteps.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'wizard-dot' + (s < _wizStep ? ' done' : s === _wizStep ? ' active' : '');
+    dotsEl.appendChild(d);
+  });
+
+  // 顯示對應步驟面板
+  [0, 1, 2, 3].forEach(s => {
+    const el = document.getElementById(`wizStep${s}`);
+    if (el) el.classList.toggle('active', s === _wizStep);
+  });
+
+  // 上一步按鈕：step1 對回訪用戶不顯示
+  const prevBtn = document.getElementById('wizPrev1');
+  if (prevBtn) prevBtn.style.display = (_wizIsNew && _wizStep === 1) ? 'block' : (_wizStep > 1 ? 'block' : 'none');
+}
+
+function selectPickupMode(mode) {
+  _pickupMode = mode;
+  ['single', 'multiple', 'custom'].forEach(m => {
+    document.getElementById(`pickupOpt${m.charAt(0).toUpperCase() + m.slice(1)}`).classList.toggle('selected', m === mode);
+    document.getElementById(`pickupInputs${m.charAt(0).toUpperCase() + m.slice(1)}`).classList.toggle('show', m === mode);
+  });
+}
+
+// ── 精靈導航 ──────────────────────────────────────────────
+async function wizardNext(step) {
+  const errEl = document.getElementById(`wizError${step}`);
+  if (errEl) errEl.style.display = 'none';
+
+  if (step === 0) {
+    // 驗證 email + nickname
+    const email    = document.getElementById('wizEmail').value.trim();
+    const nickname = document.getElementById('wizNickname').value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showWizError(0, '請輸入有效的 Email'); return;
+    }
+    if (!nickname) { showWizError(0, '請輸入暱稱'); return; }
+
+    // 向 Supabase 註冊
+    const btn = document.getElementById('wizNext0');
+    const sp  = document.getElementById('spinWiz0');
+    btn.disabled = true; sp.classList.add('spinning');
+    try {
+      const res  = await sbFetch('identify', { email, nickname });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '連線失敗');
+      localStorage.setItem('gb_user_id',  data.user_id);
+      localStorage.setItem('gb_email',    email);
+      localStorage.setItem('gb_nickname', data.nickname);
+      applySettings(data.settings);
+      updateHeader(data.nickname);
+    } catch (e) {
+      showWizError(0, e.message); return;
+    } finally {
+      btn.disabled = false; sp.classList.remove('spinning');
+    }
+  }
+
+  if (step === 1) {
+    // 驗證取貨點必填
+    if (_pickupMode === 'single' && !document.getElementById('wizPickupSingle').value.trim()) {
+      showWizError(1, '請輸入取貨點名稱'); return;
+    }
+    if (_pickupMode === 'multiple' && !document.getElementById('wizPickupNv').value.trim()) {
+      showWizError(1, '請輸入無規格商品的取貨行'); return;
+    }
+    if (_pickupMode === 'custom' && !document.getElementById('wizPickupCustom').value.trim()) {
+      showWizError(1, '請輸入自定義取貨字串'); return;
+    }
+  }
+
+  _wizStep++;
+  renderWizard();
+}
+
+function wizardPrev(step) {
+  _wizStep--;
+  renderWizard();
+}
+
+function wizardSkip(step) {
+  _wizStep++;
+  renderWizard();
+}
+
+async function wizardFinish() {
+  const userId = localStorage.getItem('gb_user_id');
+  if (!userId) return;
+
+  const btn = document.getElementById('wizBtnFinish');
+  const sp  = document.getElementById('spinWizFinish');
+  btn.disabled = true; sp.classList.add('spinning');
+
+  // 收集所有設定
+  const nickname    = (document.getElementById('wizNicknameEdit').value || '').trim()
+                   || localStorage.getItem('gb_nickname') || '';
+  const model       = document.getElementById('wizModel').value;
+  const pickupNv    = document.getElementById('wizPickupNv').value.trim();
+  const pickupHv    = document.getElementById('wizPickupHv').value.trim();
+  const pickupSingle= document.getElementById('wizPickupSingle').value.trim();
+  const pickupCustom= document.getElementById('wizPickupCustom').value.trim();
+  const bottomNote  = document.getElementById('wizBottomNote').value.trim();
+  const customInstr = document.getElementById('wizCustomInstr').value.trim();
+
+  try {
+    const res = await sbFetch('settings', {
+      user_id: userId, nickname, model,
+      pickup_no_variant:  pickupNv,
+      pickup_has_variant: pickupHv,
+      pickup_mode:        _pickupMode,
+      pickup_single_name: pickupSingle,
+      pickup_custom_str:  pickupCustom,
+      bottom_note:        bottomNote,
+      custom_instructions: customInstr,
+    });
+    if (!res.ok) throw new Error('儲存失敗');
+
+    // 更新 localStorage
+    localStorage.setItem('gb_model',        model);
+    localStorage.setItem('gb_pickup_nv',    pickupNv);
+    localStorage.setItem('gb_pickup_hv',    pickupHv);
+    localStorage.setItem('gb_pickup_mode',  _pickupMode);
+    localStorage.setItem('gb_pickup_single',pickupSingle);
+    localStorage.setItem('gb_pickup_custom',pickupCustom);
+    localStorage.setItem('gb_bottom_note',  bottomNote);
+    localStorage.setItem('gb_custom_instr', customInstr);
+    if (nickname) { localStorage.setItem('gb_nickname', nickname); updateHeader(nickname); }
+
+    closeWizard();
+  } catch (e) {
+    showWizError(3, e.message);
+  } finally {
+    btn.disabled = false; sp.classList.remove('spinning');
+  }
+}
+
+function showWizError(step, msg) {
+  const el = document.getElementById(`wizError${step}`);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// ── 設定同步 ──────────────────────────────────────────────
+function applySettings(s) {
+  if (!s) return;
+  if (s.model)                       localStorage.setItem('gb_model',         s.model);
+  if (s.pickup_no_variant  != null)  localStorage.setItem('gb_pickup_nv',     s.pickup_no_variant);
+  if (s.pickup_has_variant != null)  localStorage.setItem('gb_pickup_hv',     s.pickup_has_variant);
+  if (s.pickup_mode        != null)  localStorage.setItem('gb_pickup_mode',   s.pickup_mode);
+  if (s.pickup_single_name != null)  localStorage.setItem('gb_pickup_single', s.pickup_single_name);
+  if (s.pickup_custom_str  != null)  localStorage.setItem('gb_pickup_custom', s.pickup_custom_str);
+  if (s.bottom_note        != null)  localStorage.setItem('gb_bottom_note',   s.bottom_note);
+  if (s.custom_instructions!= null)  localStorage.setItem('gb_custom_instr',  s.custom_instructions);
+}
+
+function updateHeader(nickname) {
+  document.getElementById('headerNickname').textContent = nickname;
+  document.getElementById('userBadge').style.display = 'flex';
+}
+
+// ── 主流程 ────────────────────────────────────────────────
+let _isRunning = false;
+
+async function runFormat(mode, _retrying, errorDesc) {
   const userId = localStorage.getItem('gb_user_id');
   const model  = localStorage.getItem('gb_model') || 'openai';
-  if (!userId) { showModal(); return; }
+  if (!userId) { openWizard(true); return; }
 
   const inputText = document.getElementById('inputText').value.trim();
   if (!inputText) { setStatus('請先貼上原始文案', 'idle'); return; }
@@ -500,11 +953,18 @@ async function runFormat(mode) {
 
   const sourceText = fixModes.includes(mode) ? outputVal : inputText;
 
+  localStorage.setItem('gb_pending', JSON.stringify({
+    mode, text: sourceText, model, userId, ts: Date.now()
+  }));
+
+  _isRunning = true;
   setLoading(true, mode);
-  setStatus('送出中...', 'idle');
+  setStatus(_retrying ? '重新連線中...' : '送出中...', 'idle');
 
   try {
-    const res = await sbFetch('format', { user_id: userId, mode, text: sourceText, model });
+    const fmtBody = { user_id: userId, mode, text: sourceText, model };
+    if (errorDesc) fmtBody.error_desc = errorDesc;
+    const res = await sbFetch('format', fmtBody);
 
     if (res.status === 401) throw new Error('身份驗證失敗，請重新整理頁面');
     if (res.status === 429) throw new Error('已達每小時使用上限，請稍後再試');
@@ -518,117 +978,41 @@ async function runFormat(mode) {
     document.getElementById('outputText').value = result;
     document.getElementById('charCount').textContent = result.length + ' 字';
     setStatus('完成', 'ok');
+    localStorage.removeItem('gb_pending');
 
   } catch (err) {
-    setStatus('錯誤：' + err.message, 'err');
+    const isNetworkErr = err.message === 'Load failed'
+      || err.message === 'Failed to fetch'
+      || err.message === 'NetworkError when attempting to fetch resource.';
+    if (!isNetworkErr) {
+      localStorage.removeItem('gb_pending');
+      setStatus('錯誤：' + err.message, 'err');
+    } else {
+      setStatus('連線中斷，回到此頁將自動重試', 'err');
+    }
   } finally {
+    _isRunning = false;
     setLoading(false, mode);
   }
 }
 
-// ── 初次使用 Modal ──────────────────────────────────────
-function showModal() {
-  document.getElementById('modalOverlay').classList.add('show');
-  document.getElementById('modalEmail').focus();
-}
-
-function hideModal() {
-  document.getElementById('modalOverlay').classList.remove('show');
-}
-
-async function submitRegistration() {
-  const email    = document.getElementById('modalEmail').value.trim();
-  const nickname = document.getElementById('modalNickname').value.trim();
-  const errEl    = document.getElementById('modalError');
-  errEl.style.display = 'none';
-
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errEl.textContent = '請輸入有效的 Email';
-    errEl.style.display = 'block'; return;
-  }
-  if (!nickname) {
-    errEl.textContent = '請輸入暱稱';
-    errEl.style.display = 'block'; return;
-  }
-
-  const btn = document.getElementById('btnModalSubmit');
-  const sp  = document.getElementById('spinModal');
-  btn.disabled = true; sp.classList.add('spinning');
-
+// ── 切換 App 後自動重試 ───────────────────────────────────
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (_isRunning) return;
+  const raw = localStorage.getItem('gb_pending');
+  if (!raw) return;
   try {
-    const res  = await sbFetch('identify', { email, nickname });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || '連線失敗');
+    const p = JSON.parse(raw);
+    if (Date.now() - p.ts > 5 * 60 * 1000) { localStorage.removeItem('gb_pending'); return; }
+    const fixModes = ['no-variant', 'has-variant', 'recheck'];
+    if (fixModes.includes(p.mode)) document.getElementById('outputText').value = p.text;
+    else document.getElementById('inputText').value = p.text;
+    runFormat(p.mode, true);
+  } catch { localStorage.removeItem('gb_pending'); }
+});
 
-    localStorage.setItem('gb_user_id',  data.user_id);
-    localStorage.setItem('gb_email',    email);
-    localStorage.setItem('gb_nickname', data.nickname);
-    applySettings(data.settings);
-    updateHeader(data.nickname);
-    hideModal();
-  } catch (e) {
-    errEl.textContent = e.message;
-    errEl.style.display = 'block';
-  } finally {
-    btn.disabled = false; sp.classList.remove('spinning');
-  }
-}
-
-// ── 個人設定 ────────────────────────────────────────────
-function openSettings() {
-  document.getElementById('settingsCard').style.display = 'block';
-  document.getElementById('settingsNickname').value = localStorage.getItem('gb_nickname') || '';
-  document.getElementById('modelSelect').value      = localStorage.getItem('gb_model') || 'openai';
-  document.getElementById('pickupNv').value         = localStorage.getItem('gb_pickup_nv') || '';
-  document.getElementById('pickupHv').value         = localStorage.getItem('gb_pickup_hv') || '';
-  document.getElementById('customInstructions').value = localStorage.getItem('gb_custom_instr') || '';
-}
-
-function closeSettings() {
-  document.getElementById('settingsCard').style.display = 'none';
-}
-
-async function saveSettings() {
-  const userId   = localStorage.getItem('gb_user_id');
-  if (!userId) return;
-  const nickname = document.getElementById('settingsNickname').value.trim();
-  const model    = document.getElementById('modelSelect').value;
-  const pickupNv = document.getElementById('pickupNv').value.trim();
-  const pickupHv = document.getElementById('pickupHv').value.trim();
-  const customInstructions = document.getElementById('customInstructions').value.trim();
-
-  try {
-    const res = await sbFetch('settings', {
-      user_id: userId, nickname, model,
-      pickup_no_variant: pickupNv,
-      pickup_has_variant: pickupHv,
-      custom_instructions: customInstructions
-    });
-    if (!res.ok) throw new Error();
-    applySettings({ model, pickup_no_variant: pickupNv, pickup_has_variant: pickupHv, custom_instructions: customInstructions });
-    if (nickname) { localStorage.setItem('gb_nickname', nickname); updateHeader(nickname); }
-    const msg = document.getElementById('savedMsg');
-    msg.style.display = 'block';
-    setTimeout(() => { msg.style.display = 'none'; closeSettings(); }, 1500);
-  } catch {
-    alert('儲存失敗，請稍後再試');
-  }
-}
-
-function applySettings(s) {
-  if (!s) return;
-  if (s.model)               localStorage.setItem('gb_model', s.model);
-  if (s.pickup_no_variant  !== undefined) localStorage.setItem('gb_pickup_nv', s.pickup_no_variant);
-  if (s.pickup_has_variant !== undefined) localStorage.setItem('gb_pickup_hv', s.pickup_has_variant);
-  if (s.custom_instructions !== undefined) localStorage.setItem('gb_custom_instr', s.custom_instructions);
-}
-
-function updateHeader(nickname) {
-  document.getElementById('headerNickname').textContent = nickname;
-  document.getElementById('userBadge').style.display = 'flex';
-}
-
-// ── 狀態 & Loading ──────────────────────────────────────
+// ── 狀態 & Loading ────────────────────────────────────────
 function setStatus(msg, state) {
   const dot = document.getElementById('statusDot');
   const txt = document.getElementById('statusText');
@@ -638,44 +1022,136 @@ function setStatus(msg, state) {
 }
 
 function setLoading(on, mode) {
-  ALL_BTNS.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.disabled = on;
-  });
+  ALL_BTNS.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = on; });
   const sp = document.getElementById(SPINNER_MAP[mode]);
   if (sp) sp.classList.toggle('spinning', on);
 }
 
-// ── 清除原始文案 ────────────────────────────────────────
 function clearInput() {
   const el = document.getElementById('inputText');
-  el.value = '';
-  el.focus();
+  el.value = ''; el.focus();
   setStatus('等待輸入', 'idle');
 }
 
-// ── 複製 ────────────────────────────────────────────────
 function copyOutput() {
   const text = document.getElementById('outputText').value;
   if (!text) return;
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('copyBtn');
-    btn.textContent = '✓ 已複製';
-    btn.classList.add('copied');
+    btn.textContent = '✓ 已複製'; btn.classList.add('copied');
     setTimeout(() => { btn.textContent = '複製文案'; btn.classList.remove('copied'); }, 2200);
   });
 }
 
-// ── 初始化 ──────────────────────────────────────────────
+// ── Mini Modal（重新修正描述）─────────────────────────────
+function openMiniOverlay() {
+  const outputVal = (document.getElementById('outputText').value || '').trim();
+  if (!outputVal) { setStatus('請先執行一次格式修正，再使用重新修正功能', 'idle'); return; }
+  document.getElementById('recheckDesc').value = '';
+  document.getElementById('recheckError').style.display = 'none';
+  document.getElementById('miniOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('recheckDesc').focus(), 100);
+}
+
+function closeMiniOverlay() {
+  document.getElementById('miniOverlay').classList.remove('show');
+}
+
+async function submitRecheck() {
+  const desc = document.getElementById('recheckDesc').value.trim();
+  closeMiniOverlay();
+  await runFormat('recheck', false, desc);
+}
+
+// ── 結束 Overlay ──────────────────────────────────────────
+const DAILY_QUOTES = [
+  '效率不是把所有事情都做完，而是把對的事情做好。',
+  '時間是最公平的資源，你怎麼用，它就怎麼回報你。',
+  '好的工具，讓你把心思留給真正重要的事。',
+  '自動化省下的不只是時間，還有腦袋的空間。',
+  '重複的事情交給工具，創意的事情留給自己。',
+  '每一次格式化，都是把雜亂變成秩序的微小勝利。',
+  '把對的格式送到對的地方，是一種尊重。',
+  '好文案不只靠文字，還靠清晰的結構。',
+  '做事有條理，是一種讓人信任的能力。',
+  '今天的效率，是明天自由的基礎。',
+];
+
+let _currentRating = 0;
+
+function setRating(n) {
+  _currentRating = n;
+  document.querySelectorAll('.star-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i < n);
+  });
+  document.getElementById('starRequired').style.display = 'none';
+}
+
+async function openEndOverlay() {
+  _currentRating = 0;
+  document.querySelectorAll('.star-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById('ratingNote').value = '';
+  document.getElementById('endError').style.display = 'none';
+  document.getElementById('starRequired').style.display = 'none';
+  document.getElementById('statCount24h').textContent = '—';
+  document.getElementById('statSaved24h').textContent = '—';
+  document.getElementById('statSavedWeek').textContent = '—';
+
+  const dayIdx = new Date().getDate() % DAILY_QUOTES.length;
+  document.getElementById('dailyQuote').textContent = DAILY_QUOTES[dayIdx];
+
+  document.getElementById('endOverlay').classList.add('show');
+
+  const userId = localStorage.getItem('gb_user_id');
+  if (userId) {
+    try {
+      const res = await sbFetch('stats', { user_id: userId });
+      if (res.ok) {
+        const data = await res.json();
+        const c24 = data.count_24h  ?? 0;
+        const cWk = data.count_week ?? 0;
+        document.getElementById('statCount24h').textContent  = c24;
+        document.getElementById('statSaved24h').textContent  = c24 * 10;
+        document.getElementById('statSavedWeek').textContent = cWk * 10;
+      }
+    } catch {}
+  }
+}
+
+function closeEndOverlay() {
+  document.getElementById('endOverlay').classList.remove('show');
+}
+
+async function submitRating() {
+  if (_currentRating === 0) {
+    document.getElementById('starRequired').style.display = 'block';
+    return;
+  }
+  const userId     = localStorage.getItem('gb_user_id');
+  const suggestion = document.getElementById('ratingNote').value.trim();
+  const btn = document.getElementById('btnEndSubmit');
+  const sp  = document.getElementById('spinEndSubmit');
+  btn.disabled = true; sp.classList.add('spinning');
+  try {
+    await sbFetch('rating', { user_id: userId, rating: _currentRating, suggestion });
+  } catch {}
+  btn.disabled = false; sp.classList.remove('spinning');
+  doEndSession();
+}
+
+function doEndSession() {
+  closeEndOverlay();
+  localStorage.clear();
+  openWizard(true);
+}
+
+// ── 初始化 ────────────────────────────────────────────────
 (async function init() {
   const userId = localStorage.getItem('gb_user_id');
   const email  = localStorage.getItem('gb_email');
 
-  if (!userId || !email) {
-    showModal(); return;
-  }
+  if (!userId || !email) { openWizard(true); return; }
 
-  // 已有 userId：重新拉設定確認帳號仍存在
   try {
     const res  = await sbFetch('identify', { email, nickname: '' });
     const data = await res.json();
@@ -684,15 +1160,28 @@ function copyOutput() {
     applySettings(data.settings);
     updateHeader(data.nickname || localStorage.getItem('gb_nickname') || '');
   } catch {
-    // 帳號不存在或網路錯誤 → 顯示 modal 讓使用者重新登記
     localStorage.removeItem('gb_user_id');
-    showModal();
+    openWizard(true);
     return;
   }
 
   document.getElementById('inputText').addEventListener('input', function() {
     setStatus(this.value.trim() ? '就緒，點擊送出開始格式化' : '等待輸入', 'idle');
   });
+
+  // 頁面重載時恢復中斷請求
+  const raw = localStorage.getItem('gb_pending');
+  if (raw) {
+    try {
+      const p = JSON.parse(raw);
+      if (Date.now() - p.ts <= 5 * 60 * 1000) {
+        const fixModes = ['no-variant', 'has-variant', 'recheck'];
+        if (fixModes.includes(p.mode)) document.getElementById('outputText').value = p.text;
+        else document.getElementById('inputText').value = p.text;
+        runFormat(p.mode, true);
+      } else { localStorage.removeItem('gb_pending'); }
+    } catch { localStorage.removeItem('gb_pending'); }
+  }
 })();
 </script>
 </body>

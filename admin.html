@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>團購格式師｜後台</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --border2: #3a3a3a;
+    --text: #f0f0f0;
+    --text2: #999;
+    --text3: #666;
+    --green: #4caf7d;
+    --green-bg: #0d1f14;
+    --green-border: #1a3a28;
+    --blue: #5b9cf6;
+    --blue-bg: #0d1726;
+    --yellow: #e8c84a;
+    --yellow-bg: #1f1b0d;
+    --red: #e87070;
+    --red-bg: #1f0d0d;
+    --purple: #b07ef6;
+    --purple-bg: #160d1f;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── 登入畫面 ── */
+  #loginScreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .login-box h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .login-box p {
+    color: var(--text3);
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+
+  input[type="password"], input[type="text"], input[type="number"], select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--green);
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--green);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #0a1a10;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: opacity 0.15s;
+  }
+
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .login-error {
+    color: var(--red);
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  /* ── 主畫面 ── */
+  #dashboard { display: none; }
+
+  /* 頂部 header */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .top-bar-left { display: flex; align-items: center; gap: 12px; }
+
+  .logo { font-size: 14px; font-weight: 600; }
+  .logo span { color: var(--text3); font-weight: 400; margin-left: 4px; }
+
+  .badge-admin {
+    background: var(--purple-bg);
+    border: 1px solid #3a2255;
+    color: var(--purple);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  .top-bar-right { display: flex; align-items: center; gap: 12px; }
+
+  .refresh-info { font-size: 12px; color: var(--text3); }
+
+  .btn-icon {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    color: var(--text2);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-icon:hover { color: var(--text); border-color: #555; }
+
+  /* ── 頁面主體 ── */
+  .page-body {
+    padding: 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ── 日期篩選列 ── */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .filter-bar label { font-size: 12px; color: var(--text2); }
+
+  .filter-bar input[type="date"] {
+    width: auto;
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+
+  .btn-filter {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-filter:hover { border-color: var(--green); color: var(--green); }
+  .btn-filter.active { border-color: var(--green); color: var(--green); background: var(--green-bg); }
+
+  /* ── Section ── */
+  .section { margin-bottom: 32px; }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* ── 統計卡片格 ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .card-grid-3 { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+
+  .stat-card .card-label {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+
+  .stat-card .card-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .stat-card .card-sub {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 6px;
+  }
+
+  .stat-card.green { border-color: var(--green-border); background: var(--green-bg); }
+  .stat-card.green .card-value { color: var(--green); }
+
+  .stat-card.blue { border-color: #1a2e4a; background: var(--blue-bg); }
+  .stat-card.blue .card-value { color: var(--blue); }
+
+  .stat-card.yellow { border-color: #3a320d; background: var(--yellow-bg); }
+  .stat-card.yellow .card-value { color: var(--yellow); }
+
+  .stat-card.purple { border-color: #3a2255; background: var(--purple-bg); }
+  .stat-card.purple .card-value { color: var(--purple); }
+
+  .stat-card.red { border-color: #3a1515; background: var(--red-bg); }
+  .stat-card.red .card-value { color: var(--red); }
+
+  /* ── 評分分布 ── */
+  .rating-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+  }
+
+  .rating-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .rating-row:last-child { margin-bottom: 0; }
+
+  .star-label {
+    font-size: 13px;
+    width: 36px;
+    flex-shrink: 0;
+    color: var(--text2);
+    text-align: right;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: var(--yellow);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+
+  .bar-count {
+    font-size: 12px;
+    color: var(--text3);
+    width: 30px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ── 成本設定 ── */
+  .cost-settings {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+  }
+
+  .cost-settings-title {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cost-settings-title button {
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 11px;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    font-family: inherit;
+  }
+
+  .cost-settings-title button:hover { color: var(--text2); }
+
+  .cost-inputs {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .cost-inputs.show { display: grid; }
+
+  .cost-field label {
+    display: block;
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 5px;
+  }
+
+  .cost-field input {
+    font-size: 13px;
+    padding: 7px 10px;
+  }
+
+  /* ── 建議回饋列表 ── */
+  .suggestions-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .suggestions-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .suggestions-table th {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    color: var(--text3);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 10px 16px;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .suggestions-table td {
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 13px;
+    padding: 11px 16px;
+    vertical-align: top;
+  }
+
+  .suggestions-table tr:last-child td { border-bottom: none; }
+
+  .suggestions-table td.text { color: var(--text); max-width: 480px; }
+
+  .stars-display { color: var(--yellow); letter-spacing: 1px; }
+
+  .empty-state {
+    padding: 40px;
+    text-align: center;
+    color: var(--text3);
+    font-size: 13px;
+  }
+
+  /* ── 載入中骨架 ── */
+  @keyframes shimmer {
+    0% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+    100% { opacity: 0.3; }
+  }
+
+  .skeleton {
+    background: var(--surface2);
+    border-radius: 4px;
+    animation: shimmer 1.4s infinite;
+  }
+
+  .val-loading { display: inline-block; width: 60px; height: 28px; }
+
+  /* ── 分隔線 ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  /* ── 月份表格 ── */
+  .month-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .month-table table { width: 100%; border-collapse: collapse; }
+
+  .month-table th {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    color: var(--text3);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 10px 16px;
+    text-align: right;
+    text-transform: uppercase;
+  }
+
+  .month-table th:first-child { text-align: left; }
+
+  .month-table td {
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 13px;
+    padding: 10px 16px;
+    text-align: right;
+  }
+
+  .month-table td:first-child { text-align: left; color: var(--text); }
+  .month-table tr:last-child td { border-bottom: none; }
+
+  /* ── 錯誤提示 ── */
+  .alert-error {
+    background: var(--red-bg);
+    border: 1px solid #3a1515;
+    border-radius: var(--radius-sm);
+    color: var(--red);
+    font-size: 13px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── 登入畫面 ────────────────────────────────────────────── -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h1>後台管控</h1>
+    <p>團購格式師 · 數據儀表板</p>
+    <label class="field-label">管理員密碼</label>
+    <input type="password" id="loginPassword" placeholder="輸入密碼" autocomplete="current-password" />
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">進入</button>
+    <div class="login-error" id="loginError">密碼錯誤，請再試一次</div>
+  </div>
+</div>
+
+<!-- ── 主儀表板 ────────────────────────────────────────────── -->
+<div id="dashboard">
+
+  <!-- Header -->
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <div class="logo">團購格式師 <span>後台</span></div>
+      <div class="badge-admin">ADMIN</div>
+    </div>
+    <div class="top-bar-right">
+      <span class="refresh-info" id="lastRefreshInfo">—</span>
+      <button class="btn-icon" onclick="loadAll()">↺ 重新整理</button>
+      <button class="btn-icon" onclick="doLogout()">登出</button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="page-body">
+
+    <div class="alert-error" id="globalError"></div>
+
+    <!-- 日期篩選 -->
+    <div class="filter-bar">
+      <label>查看日期：</label>
+      <button class="btn-filter active" data-range="today" onclick="setRange('today')">今天</button>
+      <button class="btn-filter" data-range="7d" onclick="setRange('7d')">近 7 天</button>
+      <button class="btn-filter" data-range="30d" onclick="setRange('30d')">近 30 天</button>
+      <button class="btn-filter" data-range="custom" onclick="setRange('custom')">自訂</button>
+      <span id="customRangePicker" style="display:none; align-items:center; gap:8px; display:none">
+        <input type="date" id="rangeFrom" />
+        <span style="color:var(--text3)">—</span>
+        <input type="date" id="rangeTo" />
+        <button class="btn-filter" onclick="loadAll()">套用</button>
+      </span>
+    </div>
+
+    <!-- ① 使用者統計 -->
+    <div class="section">
+      <div class="section-title">使用者統計</div>
+      <div class="card-grid">
+        <div class="stat-card green">
+          <div class="card-label">累計總人數</div>
+          <div class="card-value" id="statTotalUsers"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub">自上線以來</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="card-label">期間新增用戶</div>
+          <div class="card-value" id="statNewUsers"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub" id="statNewUsersSub">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="card-label">期間活躍人數</div>
+          <div class="card-value" id="statActiveUsers"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub" id="statActiveUsersSub">有產生使用紀錄</div>
+        </div>
+        <div class="stat-card">
+          <div class="card-label">活躍率</div>
+          <div class="card-value" id="statActiveRate"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub">活躍 ÷ 累計用戶</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ② 使用量 -->
+    <div class="section">
+      <div class="section-title">使用量</div>
+      <div class="card-grid">
+        <div class="stat-card blue">
+          <div class="card-label">期間總次數</div>
+          <div class="card-value" id="statTotalReqs"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub" id="statTotalReqsSub">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="card-label">每活躍用戶平均</div>
+          <div class="card-value" id="statReqPerUser"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub">次 / 人（期間內）</div>
+        </div>
+        <div class="stat-card">
+          <div class="card-label">每人每日平均</div>
+          <div class="card-value" id="statReqPerUserDay"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub">次 / 人 / 天</div>
+        </div>
+        <div class="stat-card">
+          <div class="card-label">每日平均總次數</div>
+          <div class="card-value" id="statReqPerDay"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub">次 / 天（期間平均）</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ 成本統計 -->
+    <div class="section">
+      <div class="section-title">算力 &amp; 成本統計</div>
+
+      <!-- 成本設定 -->
+      <div class="cost-settings">
+        <div class="cost-settings-title">
+          <span>成本設定</span>
+          <button onclick="toggleCostSettings()">▸ 展開調整</button>
+        </div>
+        <div class="cost-inputs" id="costInputs">
+          <div class="cost-field">
+            <label>OpenAI — Input ($/1K tokens)</label>
+            <input type="number" id="costOAIin" step="0.0001" value="0.005" />
+          </div>
+          <div class="cost-field">
+            <label>OpenAI — Output ($/1K tokens)</label>
+            <input type="number" id="costOAIout" step="0.0001" value="0.015" />
+          </div>
+          <div class="cost-field">
+            <label>Claude — Input ($/1K tokens)</label>
+            <input type="number" id="costCLin" step="0.0001" value="0.003" />
+          </div>
+          <div class="cost-field">
+            <label>Claude — Output ($/1K tokens)</label>
+            <input type="number" id="costCLout" step="0.0001" value="0.015" />
+          </div>
+          <div class="cost-field">
+            <label>USD → TWD 匯率</label>
+            <input type="number" id="usdRate" step="1" value="32" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <div class="stat-card yellow">
+          <div class="card-label">期間算力耗費（USD）</div>
+          <div class="card-value" id="statCostUSD"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub" id="statCostTWD">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="card-label">每日平均成本（USD）</div>
+          <div class="card-value" id="statCostDailyUSD"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub" id="statCostDailyTWD">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="card-label">Input Tokens（期間）</div>
+          <div class="card-value" id="statInputTok"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub">所有請求合計</div>
+        </div>
+        <div class="stat-card">
+          <div class="card-label">Output Tokens（期間）</div>
+          <div class="card-value" id="statOutputTok"><span class="skeleton val-loading"></span></div>
+          <div class="card-sub">所有請求合計</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ 每月摘要表 -->
+    <div class="section">
+      <div class="section-title">每月摘要（近 6 個月）</div>
+      <div class="month-table">
+        <table>
+          <thead>
+            <tr>
+              <th>月份</th>
+              <th>新增用戶</th>
+              <th>活躍人數</th>
+              <th>總次數</th>
+              <th>每人每日均</th>
+              <th>成本（USD）</th>
+            </tr>
+          </thead>
+          <tbody id="monthTableBody">
+            <tr><td colspan="6"><div class="empty-state">載入中…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ⑤ 評分統計 -->
+    <div class="section">
+      <div class="section-title">評分統計</div>
+      <div class="card-grid card-grid-3">
+        <div>
+          <div class="card-grid" style="margin-bottom:12px">
+            <div class="stat-card yellow">
+              <div class="card-label">平均分數</div>
+              <div class="card-value" id="statAvgRating"><span class="skeleton val-loading"></span></div>
+              <div class="card-sub" id="statRatingCount">— 筆評分</div>
+            </div>
+          </div>
+          <!-- 星評分布 -->
+          <div class="rating-card">
+            <div id="ratingBars">
+              <!-- 動態產生 -->
+              <div class="empty-state">載入中…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 建議回饋 -->
+        <div style="grid-column: span 2">
+          <div class="section-title" style="margin-bottom:10px">最新建議回饋</div>
+          <div class="suggestions-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>時間</th>
+                  <th>用戶</th>
+                  <th>評分</th>
+                  <th>建議內容</th>
+                </tr>
+              </thead>
+              <tbody id="suggestionsBody">
+                <tr><td colspan="4"><div class="empty-state">載入中…</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-body -->
+</div><!-- /dashboard -->
+
+<script>
+// ── 設定 ─────────────────────────────────────────────────
+const SUPABASE_URL  = 'https://wshdgztjurzihjpovdqt.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzaGRnenRqdXJ6aWhqcG92ZHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTMxMzgsImV4cCI6MjA5MTA2OTEzOH0.M_n4PBHCpkwnMMbMwk2-SiJ2-zn-OaelFnFuaxvJpbA';
+const STORAGE_KEY   = 'gb_admin_token';
+
+let _adminToken = '';
+let _currentRange = 'today';
+let _refreshTimer = null;
+
+// ── 工具 ─────────────────────────────────────────────────
+function sbAdmin(action, extra = {}) {
+  return fetch(`${SUPABASE_URL}/functions/v1/groupbuy`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON}`
+    },
+    body: JSON.stringify({ action, admin_token: _adminToken, ...extra })
+  }).then(r => {
+    if (!r.ok) return r.json().then(e => Promise.reject(e));
+    return r.json();
+  });
+}
+
+function formatNum(n) {
+  if (n == null || isNaN(n)) return '—';
+  if (n >= 10000) return (n / 1000).toFixed(1) + 'K';
+  return Number(n).toLocaleString();
+}
+
+function formatTokens(n) {
+  if (n == null || isNaN(n)) return '—';
+  if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+  return String(n);
+}
+
+function fmtDate(isoStr) {
+  if (!isoStr) return '—';
+  const d = new Date(isoStr);
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function starsHTML(n) {
+  const filled = Math.round(n);
+  return '★'.repeat(filled) + '☆'.repeat(5 - filled);
+}
+
+// ── 日期範圍 ─────────────────────────────────────────────
+function getDateRange() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+  if (_currentRange === 'custom') {
+    return {
+      from: document.getElementById('rangeFrom').value,
+      to:   document.getElementById('rangeTo').value
+    };
+  }
+
+  const to   = toISO(now);
+  let from = to;
+  if (_currentRange === '7d') {
+    const d = new Date(now); d.setDate(d.getDate() - 6);
+    from = toISO(d);
+  } else if (_currentRange === '30d') {
+    const d = new Date(now); d.setDate(d.getDate() - 29);
+    from = toISO(d);
+  }
+  return { from, to };
+}
+
+function setRange(r) {
+  _currentRange = r;
+  document.querySelectorAll('.btn-filter[data-range]').forEach(b => {
+    b.classList.toggle('active', b.dataset.range === r);
+  });
+  const picker = document.getElementById('customRangePicker');
+  picker.style.display = r === 'custom' ? 'flex' : 'none';
+  if (r !== 'custom') loadAll();
+}
+
+// ── 成本計算 ─────────────────────────────────────────────
+function calcCost(inputTok, outputTok, model) {
+  const isOpenAI = !model || model === 'openai';
+  const inRate  = isOpenAI
+    ? parseFloat(document.getElementById('costOAIin').value)
+    : parseFloat(document.getElementById('costCLin').value);
+  const outRate = isOpenAI
+    ? parseFloat(document.getElementById('costOAIout').value)
+    : parseFloat(document.getElementById('costCLout').value);
+  return (inputTok / 1000) * inRate + (outputTok / 1000) * outRate;
+}
+
+function calcTotalCost(usageByModel) {
+  // usageByModel: [{ model, input_tokens, output_tokens }]
+  if (!usageByModel || !usageByModel.length) return 0;
+  return usageByModel.reduce((sum, row) => {
+    return sum + calcCost(row.input_tokens || 0, row.output_tokens || 0, row.model);
+  }, 0);
+}
+
+// ── 登入 ─────────────────────────────────────────────────
+async function doLogin() {
+  const pw  = document.getElementById('loginPassword').value.trim();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+
+  if (!pw) return;
+  btn.disabled = true;
+  btn.textContent = '驗證中…';
+  err.style.display = 'none';
+
+  try {
+    // 用 ping_admin action 驗證
+    const res = await sbAdmin('admin_ping', { admin_token: pw });
+    if (res.ok) {
+      _adminToken = pw;
+      sessionStorage.setItem(STORAGE_KEY, pw);
+      showDashboard();
+    } else {
+      throw new Error('invalid');
+    }
+  } catch {
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '進入';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem(STORAGE_KEY);
+  _adminToken = '';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginPassword').value = '';
+}
+
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ── 顯示儀表板 ───────────────────────────────────────────
+function showDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display   = 'block';
+  loadAll();
+  scheduleRefresh();
+}
+
+function scheduleRefresh() {
+  if (_refreshTimer) clearInterval(_refreshTimer);
+  _refreshTimer = setInterval(loadAll, 30 * 60 * 1000); // 每 30 分鐘自動刷新
+}
+
+// ── 主載入 ───────────────────────────────────────────────
+async function loadAll() {
+  const { from, to } = getDateRange();
+  showGlobalError('');
+
+  // 更新刷新時間
+  const now = new Date();
+  document.getElementById('lastRefreshInfo').textContent =
+    `上次更新 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  try {
+    const [statsRes, ratingsRes, monthRes] = await Promise.all([
+      sbAdmin('admin_stats', { from, to }),
+      sbAdmin('admin_ratings', { limit: 20 }),
+      sbAdmin('admin_monthly', { months: 6 })
+    ]);
+
+    renderUserStats(statsRes, from, to);
+    renderUsageStats(statsRes, from, to);
+    renderCostStats(statsRes, from, to);
+    renderRatings(ratingsRes);
+    renderMonthTable(monthRes);
+  } catch (e) {
+    console.error(e);
+    showGlobalError('載入失敗：' + (e.error || e.message || '未知錯誤'));
+  }
+}
+
+function showGlobalError(msg) {
+  const el = document.getElementById('globalError');
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+// ── 渲染：使用者統計 ─────────────────────────────────────
+function renderUserStats(data, from, to) {
+  const total  = data.total_users  ?? '—';
+  const newU   = data.new_users    ?? '—';
+  const active = data.active_users ?? '—';
+  const rate   = (total && active) ? ((active / total) * 100).toFixed(1) + '%' : '—';
+
+  document.getElementById('statTotalUsers').textContent  = formatNum(total);
+  document.getElementById('statNewUsers').textContent    = formatNum(newU);
+  document.getElementById('statActiveUsers').textContent = formatNum(active);
+  document.getElementById('statActiveRate').textContent  = rate;
+
+  const days = daysBetween(from, to);
+  document.getElementById('statNewUsersSub').textContent    = rangeLabel(from, to, days);
+  document.getElementById('statActiveUsersSub').textContent = rangeLabel(from, to, days) + '，有操作紀錄';
+}
+
+// ── 渲染：使用量 ─────────────────────────────────────────
+function renderUsageStats(data, from, to) {
+  const total  = data.total_requests ?? 0;
+  const active = data.active_users   ?? 1;
+  const days   = Math.max(1, daysBetween(from, to));
+
+  document.getElementById('statTotalReqs').textContent       = formatNum(total);
+  document.getElementById('statReqPerUser').textContent      = active > 0 ? (total / active).toFixed(1) : '—';
+  document.getElementById('statReqPerUserDay').textContent   = active > 0 ? (total / active / days).toFixed(1) : '—';
+  document.getElementById('statReqPerDay').textContent       = (total / days).toFixed(1);
+  document.getElementById('statTotalReqsSub').textContent    = rangeLabel(from, to, days);
+}
+
+// ── 渲染：成本 ───────────────────────────────────────────
+function renderCostStats(data, from, to) {
+  const inputTok  = data.total_input_tokens  ?? 0;
+  const outputTok = data.total_output_tokens ?? 0;
+
+  document.getElementById('statInputTok').textContent  = formatTokens(inputTok);
+  document.getElementById('statOutputTok').textContent = formatTokens(outputTok);
+
+  // 如果有 by_model 分開計算
+  let totalCostUSD = 0;
+  if (data.usage_by_model && data.usage_by_model.length) {
+    totalCostUSD = calcTotalCost(data.usage_by_model);
+  } else {
+    // fallback: 假設全部 openai
+    totalCostUSD = calcCost(inputTok, outputTok, 'openai');
+  }
+
+  const days      = Math.max(1, daysBetween(from, to));
+  const rate      = parseFloat(document.getElementById('usdRate').value) || 32;
+  const dailyUSD  = totalCostUSD / days;
+
+  document.getElementById('statCostUSD').textContent     = '$' + totalCostUSD.toFixed(4);
+  document.getElementById('statCostTWD').textContent     = '≈ NT$' + (totalCostUSD * rate).toFixed(1);
+  document.getElementById('statCostDailyUSD').textContent = '$' + dailyUSD.toFixed(4);
+  document.getElementById('statCostDailyTWD').textContent = '≈ NT$' + (dailyUSD * rate).toFixed(1);
+}
+
+// ── 渲染：評分 ───────────────────────────────────────────
+function renderRatings(data) {
+  const dist    = data.distribution  ?? {};   // { "1": 2, "2": 0, ... }
+  const avg     = data.average       ?? null;
+  const total   = data.total         ?? 0;
+  const recent  = data.recent        ?? [];
+
+  // 平均分
+  document.getElementById('statAvgRating').textContent =
+    avg != null ? avg.toFixed(2) : '—';
+  document.getElementById('statRatingCount').textContent = `共 ${total} 筆評分`;
+
+  // 星評分布
+  const barsEl = document.getElementById('ratingBars');
+  const maxCount = Math.max(1, ...Object.values(dist));
+  barsEl.innerHTML = [5,4,3,2,1].map(star => {
+    const count = dist[star] ?? 0;
+    const pct   = Math.round((count / maxCount) * 100);
+    return `
+      <div class="rating-row">
+        <div class="star-label">${'★'.repeat(star)}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="bar-count">${count}</div>
+      </div>`;
+  }).join('');
+
+  // 建議回饋列表
+  const tbody = document.getElementById('suggestionsBody');
+  if (!recent.length) {
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state">目前尚無建議回饋</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = recent.map(r => `
+    <tr>
+      <td style="white-space:nowrap">${fmtDate(r.created_at)}</td>
+      <td>${r.nickname || r.user_id?.slice(0,8) || '—'}</td>
+      <td><span class="stars-display">${starsHTML(r.rating)}</span></td>
+      <td class="text">${r.suggestion ? escHtml(r.suggestion) : '<span style="color:var(--text3)">（無文字）</span>'}</td>
+    </tr>`).join('');
+}
+
+// ── 渲染：每月表格 ───────────────────────────────────────
+function renderMonthTable(data) {
+  const rows  = data.months ?? [];
+  const tbody = document.getElementById('monthTableBody');
+  const rate  = parseFloat(document.getElementById('usdRate').value) || 32;
+
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">尚無資料</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const cost    = calcCost(r.input_tokens || 0, r.output_tokens || 0, null);
+    const perUserDay = (r.active_users && r.days)
+      ? (r.total_requests / r.active_users / r.days).toFixed(1)
+      : '—';
+    return `
+      <tr>
+        <td>${r.month}</td>
+        <td>${formatNum(r.new_users)}</td>
+        <td>${formatNum(r.active_users)}</td>
+        <td>${formatNum(r.total_requests)}</td>
+        <td>${perUserDay}</td>
+        <td>$${cost.toFixed(4)}</td>
+      </tr>`;
+  }).join('');
+}
+
+// ── 成本設定展開 ─────────────────────────────────────────
+function toggleCostSettings() {
+  const el  = document.getElementById('costInputs');
+  const btn = document.querySelector('.cost-settings-title button');
+  const show = !el.classList.contains('show');
+  el.classList.toggle('show', show);
+  btn.textContent = show ? '▾ 收起' : '▸ 展開調整';
+  if (!show) loadAll(); // 重算成本
+}
+
+// ── 工具函式 ─────────────────────────────────────────────
+function daysBetween(from, to) {
+  const a = new Date(from), b = new Date(to);
+  return Math.max(1, Math.round((b - a) / 86400000) + 1);
+}
+
+function rangeLabel(from, to, days) {
+  if (from === to) return from;
+  return `${from} — ${to}（${days} 天）`;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── 初始化：檢查 session ─────────────────────────────────
+(function init() {
+  const saved = sessionStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    _adminToken = saved;
+    showDashboard();
+  }
+})();
+</script>
+</body>
+</html>
